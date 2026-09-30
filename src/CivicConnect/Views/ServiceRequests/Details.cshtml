@@ -1,7 +1,7 @@
 ﻿@model CivicConnect.Models.ServiceRequest
 
 <h2>Request #@Model.Id</h2>
-<p>Category: @Model.Category</p>
+<p>Category: @Model.Category?.Name</p>
 <p>Description: @Model.Description</p>
 <p>Status: @Model.Status</p>
 <p>Submitted: @Model.SubmittedAt</p>
