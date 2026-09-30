@@ -24,7 +24,7 @@ namespace CivicConnect.Controllers
         [ValidateAntiForgeryToken]
         public IActionResult Create(ServiceRequest request)
         {
-            if (!ModelState.IsValid) // enforces mandatory-field acceptance criterion
+            if (!ModelState.IsValid) // enforces mandatory field acceptance criterion
             {
                 return View(request);
             }
