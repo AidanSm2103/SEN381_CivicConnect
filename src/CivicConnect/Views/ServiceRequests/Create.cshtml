@@ -1,0 +1,17 @@
+﻿@model CivicConnect.Models.ServiceRequest
+
+<h2>Submit a Service Request</h2>
+
+<form asp-action="Create" method="post">
+    <div>
+        <label asp-for="Category"></label>
+        <input asp-for="Category" />
+        <span asp-validation-for="Category"></span>
+    </div>
+    <div>
+        <label asp-for="Description"></label>
+        <textarea asp-for="Description"></textarea>
+        <span asp-validation-for="Description"></span>
+    </div>
+    <button type="submit">Submit Request</button>
+</form>
