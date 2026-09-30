@@ -12,7 +12,7 @@ namespace CivicConnect.Models
         [Required]
         public string Description { get; set; }
 
-        public string Status { get; set; } = "Submitted"; // matches FR-003's status flow
+        public string Status { get; set; } = "Submitted";
 
         public DateTime SubmittedAt { get; set; } = DateTime.UtcNow;
     }
