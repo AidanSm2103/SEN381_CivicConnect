@@ -5,6 +5,8 @@ VisualStudioVersion = 17.14.37710.0 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CivicConnect", "CivicConnect.csproj", "{DEDF9025-ED32-469E-A509-86CD708F4B17}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CivicConnect.Tests", "..\CivicConnect.Tests\CivicConnect.Tests.csproj", "{7D108FBC-5445-4635-9CCF-385A91B59FFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{DEDF9025-ED32-469E-A509-86CD708F4B17}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEDF9025-ED32-469E-A509-86CD708F4B17}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEDF9025-ED32-469E-A509-86CD708F4B17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D108FBC-5445-4635-9CCF-385A91B59FFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D108FBC-5445-4635-9CCF-385A91B59FFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D108FBC-5445-4635-9CCF-385A91B59FFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D108FBC-5445-4635-9CCF-385A91B59FFC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

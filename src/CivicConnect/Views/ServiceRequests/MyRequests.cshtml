@@ -1,0 +1,19 @@
+@model MyRequestsViewModel
+@* OWNER: Enrique de Sousa (FR-003, FR-004) *@
+@{ ViewData["Title"] = "My requests"; }
+<h2>My requests</h2>
+<table class="table">
+    <thead><tr><th>Reference</th><th>Category</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Requests)
+    {
+        <tr>
+            <td>@r.ReferenceNo</td>
+            <td>@r.CategoryName</td>
+            <td>@r.Status</td>
+            <td>@r.SubmittedAt</td>
+            <td><a asp-action="Details" asp-route-id="@r.Id">View</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

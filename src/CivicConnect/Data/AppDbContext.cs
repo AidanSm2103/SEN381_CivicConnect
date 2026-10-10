@@ -1,15 +1,21 @@
-﻿using Microsoft.EntityFrameworkCore;
-using CivicConnect.Models;
-
 namespace CivicConnect.Data
 {
+    /// <summary>
+    /// EF Core context. OWNER: Michael-John Robinson (only person who edits this file or runs migrations).
+    /// Per-entity configuration for the NEW entities lives in Data/Configurations (picked up automatically below).
+    /// The Category seed data and the ServiceRequest-&gt;Category FK stay here exactly as bootstrapped,
+    /// so the existing migration snapshot is unchanged.
+    /// </summary>
     public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<ServiceRequest> ServiceRequests { get; set; }
-
-        public DbSet<Category> Categories { get; set; }
+        public DbSet<ServiceRequest> ServiceRequests { get; set; } = null!;
+        public DbSet<Category> Categories { get; set; } = null!;
+        public DbSet<User> Users { get; set; } = null!;
+        public DbSet<StaffCategoryScope> StaffCategoryScopes { get; set; } = null!;
+        public DbSet<StatusHistory> StatusHistories { get; set; } = null!;
+        public DbSet<RequestComment> RequestComments { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -36,6 +42,9 @@ namespace CivicConnect.Data
                 .WithMany()
                 .HasForeignKey(r => r.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Picks up every IEntityTypeConfiguration<T> in Data/Configurations.
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
         }
     }
 }

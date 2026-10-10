@@ -1,0 +1,28 @@
+@model RequestSearchViewModel
+@* OWNER: Enrique de Sousa. Staff work queue (FR-006, FR-007). *@
+@{ ViewData["Title"] = "Work queue"; }
+<h2>Work queue</h2>
+<form method="get">
+    <input name="Text" value="@Model.Criteria.Text" placeholder="Search reference or description" />
+    <select name="CategoryId" asp-items="Model.Categories"><option value="">All categories</option></select>
+    <select name="Status" asp-items="Html.GetEnumSelectList<RequestStatus>()"><option value="">Any status</option></select>
+    <label><input type="checkbox" name="IncludeClosed" value="true" /> Include closed</label>
+    <button type="submit">Filter</button>
+</form>
+<table class="table">
+    <thead><tr><th>Reference</th><th>Category</th><th>Status</th><th>Assigned to</th><th>Submitted</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Results.Items)
+    {
+        <tr>
+            <td>@r.ReferenceNo</td>
+            <td>@r.CategoryName</td>
+            <td>@r.Status</td>
+            <td>@r.AssignedStaffName</td>
+            <td>@r.SubmittedAt</td>
+            <td><a asp-action="Details" asp-route-id="@r.Id">Open</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+@* TODO(Enrique): paging links using Model.Results.Page / TotalPages; sorting links using Criteria.SortBy / Descending. *@

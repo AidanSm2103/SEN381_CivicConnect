@@ -1,0 +1,28 @@
+@* OWNER: Aidan Smith. Role-based navigation links, rendered inside the layout's <ul class="navbar-nav">. *@
+@if (User.Identity?.IsAuthenticated == true)
+{
+    @if (User.IsInRole(RoleNames.Requester))
+    {
+        <li class="nav-item"><a class="nav-link text-dark" asp-controller="ServiceRequests" asp-action="Create">New request</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" asp-controller="ServiceRequests" asp-action="MyRequests">My requests</a></li>
+    }
+    @if (User.IsInRole(RoleNames.Staff))
+    {
+        <li class="nav-item"><a class="nav-link text-dark" asp-controller="StaffRequests" asp-action="Index">Work queue</a></li>
+    }
+    @if (User.IsInRole(RoleNames.Management))
+    {
+        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Management" asp-action="Dashboard">Overview</a></li>
+        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Management" asp-action="Requests">All requests</a></li>
+    }
+    <li class="nav-item">
+        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+            <button type="submit" class="nav-link btn btn-link text-dark">Log out</button>
+        </form>
+    </li>
+}
+else
+{
+    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Log in</a></li>
+    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a></li>
+}

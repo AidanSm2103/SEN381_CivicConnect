@@ -1,0 +1,12 @@
+@model LoginViewModel
+@* OWNER: Aidan Smith *@
+@{ ViewData["Title"] = "Log in"; }
+<h2>Log in</h2>
+<form asp-action="Login" method="post">
+    <input type="hidden" asp-for="ReturnUrl" />
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <div><label asp-for="Email"></label><input asp-for="Email" /><span asp-validation-for="Email"></span></div>
+    <div><label asp-for="Password"></label><input asp-for="Password" /><span asp-validation-for="Password"></span></div>
+    <button type="submit">Log in</button>
+</form>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }
