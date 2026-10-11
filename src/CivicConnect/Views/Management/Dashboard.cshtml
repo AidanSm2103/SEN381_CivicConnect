@@ -1,0 +1,21 @@
+@model ManagementDashboardViewModel
+@* OWNER: Michael-John Robinson. Read-only overview (FR-013, FR-014, FR-016). *@
+@{ ViewData["Title"] = "Overview"; }
+<h2>Service overview</h2>
+<h3>Requests by status</h3>
+<ul>
+@foreach (var row in Model.StatusCounts)
+{
+    <li>@row.Status: @row.Count</li>
+}
+</ul>
+<h3>Staff activity</h3>
+<table class="table">
+    <thead><tr><th>Staff</th><th>Open</th><th>Resolved</th><th>Closed</th></tr></thead>
+    <tbody>
+    @foreach (var s in Model.StaffActivity)
+    {
+        <tr><td>@s.StaffName</td><td>@s.AssignedOpen</td><td>@s.Resolved</td><td>@s.Closed</td></tr>
+    }
+    </tbody>
+</table>

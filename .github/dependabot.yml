@@ -1,0 +1,11 @@
+# OWNER: Aidan Smith. Weekly dependency update PRs (NuGet + GitHub Actions).
+version: 2
+updates:
+  - package-ecosystem: "nuget"
+    directory: "/src/CivicConnect"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

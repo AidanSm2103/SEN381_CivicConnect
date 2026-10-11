@@ -1,0 +1,25 @@
+# OWNER: Aidan Smith. Static security analysis (SAST). Report-only at first; make it blocking once findings are triaged.
+name: CodeQL
+
+on:
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 3 * * 1'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: csharp
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - run: dotnet build src/CivicConnect/CivicConnect.sln --configuration Release
+      - uses: github/codeql-action/analyze@v3

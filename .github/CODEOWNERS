@@ -1,0 +1,28 @@
+# CODEOWNERS only REQUESTS reviews automatically; branch protection still enforces the 2-approval rule.
+
+/src/CivicConnect/Program.cs                         @AidanSm2103
+/src/CivicConnect/GlobalUsings.cs                    @AidanSm2103
+/src/CivicConnect/Common/                            @AidanSm2103
+/src/CivicConnect/Services/Security/                 @AidanSm2103
+/src/CivicConnect/Services/Audit/                    @AidanSm2103
+/src/CivicConnect/Services/Notifications/            @AidanSm2103
+/src/CivicConnect/Controllers/AccountController.cs   @AidanSm2103
+/src/CivicConnect/Controllers/AppControllerBase.cs   @AidanSm2103
+/.github/                                            @AidanSm2103
+
+/src/CivicConnect/Models/                            @Michael-jcr4
+/src/CivicConnect/Data/                              @Michael-jcr4
+/src/CivicConnect/Migrations/                        @Michael-jcr4
+/src/CivicConnect/Services/Reporting/                @Michael-jcr4
+/src/CivicConnect/Controllers/ManagementController.cs @Michael-jcr4
+
+/src/CivicConnect/Services/Requests/                 @EnriqueDeSousa
+/src/CivicConnect/Services/Workflow/                 @EnriqueDeSousa
+/src/CivicConnect/Controllers/ServiceRequestsController.cs @EnriqueDeSousa
+/src/CivicConnect/Controllers/StaffRequestsController.cs   @EnriqueDeSousa
+
+/src/CivicConnect.Tests/Fakes/                       @AidanSm2103
+/src/CivicConnect.Tests/BlackBox/                    @Michael-jcr4
+/src/CivicConnect.Tests/E2E/                         @Michael-jcr4
+/src/CivicConnect.Tests/Performance/                 @Michael-jcr4
+/src/CivicConnect.Tests/Unit/RequestStateTests.cs    @EnriqueDeSousa
