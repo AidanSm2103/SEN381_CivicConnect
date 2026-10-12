@@ -1,6 +1,6 @@
 namespace CivicConnect.Controllers
 {
-    /// <summary>OWNER: Aidan Smith. Login / logout / registration (NFR-002).</summary>
+    //Login / logout / registration (NFR-002)
     [AllowAnonymous]
     public class AccountController : AppControllerBase
     {
@@ -15,52 +15,89 @@ namespace CivicConnect.Controllers
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
-            // TODO: return View(new LoginViewModel { ReturnUrl = returnUrl });
-            throw new NotImplementedException();
+            return View(new LoginViewModel { ReturnUrl = returnUrl });
         }
 
         // POST /Account/Login
         [HttpPost, ValidateAntiForgeryToken]
-        public Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            // TODO: ModelState invalid -> View(model). _auth.ValidateCredentialsAsync; failure -> add generic ModelState error and View(model).
-            // Success -> HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, ClaimsPrincipalFactory.Create(user));
-            // redirect to model.ReturnUrl ONLY if Url.IsLocalUrl(returnUrl) (open-redirect protection), else to the role's home
-            // (Requester -> ServiceRequests/MyRequests, Staff -> StaffRequests/Index, Management -> Management/Dashboard).
-            throw new NotImplementedException();
+            if (!ModelState.IsValid) return View(model);
+
+            var result = await _auth.ValidateCredentialsAsync(model.Email, model.Password);
+            if (result.Failed)
+            {
+                // One generic message for every failure
+                ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid email or password.");
+                model.Password = string.Empty;
+                return View(model);
+            }
+
+            var user = result.Value!;
+            await SignInUserAsync(user);
+
+            // Open-redirect protection
+            if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
+                return LocalRedirect(model.ReturnUrl);
+
+            return RedirectToRoleHome(user.Role);
         }
 
         // POST /Account/Logout
         [HttpPost, ValidateAntiForgeryToken, Authorize]
-        public Task<IActionResult> Logout()
+        public async Task<IActionResult> Logout()
         {
-            // TODO: HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme); RedirectToAction("Index", "Home").
-            throw new NotImplementedException();
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return RedirectToAction("Index", "Home");
         }
 
         // GET /Account/Register
         [HttpGet]
         public IActionResult Register()
         {
-            // TODO: return View(new RegisterViewModel());
-            throw new NotImplementedException();
+            return View(new RegisterViewModel());
         }
 
         // POST /Account/Register
         [HttpPost, ValidateAntiForgeryToken]
-        public Task<IActionResult> Register(RegisterViewModel model)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            // TODO: _auth.RegisterRequesterAsync(new RegisterCommand{...}); DuplicateEmail/ValidationFailed -> ModelState error + View(model);
-            // success -> sign in (same as Login) and redirect to ServiceRequests/Create.
-            throw new NotImplementedException();
+            if (!ModelState.IsValid) return View(model);
+
+            var result = await _auth.RegisterRequesterAsync(new RegisterCommand
+            {
+                Email = model.Email,
+                DisplayName = model.DisplayName,
+                Password = model.Password
+            });
+
+            if (result.Failed)
+            {
+                var field = result.ErrorCode == ErrorCodes.DuplicateEmail ? nameof(RegisterViewModel.Email) : string.Empty;
+                ModelState.AddModelError(field, result.ErrorMessage ?? "Registration failed.");
+                model.Password = string.Empty;
+                model.ConfirmPassword = string.Empty;
+                return View(model);
+            }
+
+            await SignInUserAsync(result.Value!);
+            return RedirectToAction("Create", "ServiceRequests");
         }
 
         // GET /Account/AccessDenied
         [HttpGet]
         public IActionResult AccessDenied()
         {
-            // TODO: return View();
-            throw new NotImplementedException();
+            Response.StatusCode = StatusCodes.Status403Forbidden;
+            return View();
+        }
+
+        private Task SignInUserAsync(User user)
+        {
+            return HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                ClaimsPrincipalFactory.Create(user),
+                new AuthenticationProperties { IsPersistent = false });
         }
     }
 }
