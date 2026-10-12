@@ -1,4 +1,4 @@
-# OWNER: Aidan Smith. Weekly dependency update PRs (NuGet + GitHub Actions).
+# Weekly dependency update PRs 
 version: 2
 updates:
   - package-ecosystem: "nuget"
@@ -9,3 +9,4 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+
