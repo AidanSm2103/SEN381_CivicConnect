@@ -1,45 +1,37 @@
 namespace CivicConnect.Tests.Fakes
 {
-    /// <summary>In-memory IUserRepository. OWNER: Aidan Smith.</summary>
+    // In-memory IUserRepository 
     public class FakeUserRepository : IUserRepository
     {
         public List<User> Users { get; } = new();
         public Dictionary<int, List<int>> CategoryScopes { get; } = new();   // staffUserId -> categoryIds
 
-        public Task<User?> GetByIdAsync(int id)
-        {
-            // TODO: Users.FirstOrDefault(u => u.Id == id).
-            throw new NotImplementedException();
-        }
+        public Task<User?> GetByIdAsync(int id) => Task.FromResult(Users.FirstOrDefault(u => u.Id == id));
 
-        public Task<User?> GetByEmailAsync(string email)
-        {
-            // TODO: case-insensitive match.
-            throw new NotImplementedException();
-        }
+        public Task<User?> GetByEmailAsync(string email) =>
+            Task.FromResult(Users.FirstOrDefault(u => string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase)));
 
-        public Task<bool> EmailExistsAsync(string email)
-        {
-            // TODO: case-insensitive Any.
-            throw new NotImplementedException();
-        }
+        public Task<bool> EmailExistsAsync(string email) =>
+            Task.FromResult(Users.Any(u => string.Equals(u.Email, email, StringComparison.OrdinalIgnoreCase)));
 
         public Task AddAsync(User user)
         {
-            // TODO: assign Id if 0 and add to Users.
-            throw new NotImplementedException();
+            if (user.Id == 0) user.Id = Users.Count + 1;
+            Users.Add(user);
+            return Task.CompletedTask;
         }
 
         public Task<IReadOnlyList<int>> GetCategoryScopeIdsAsync(int staffUserId)
         {
-            // TODO: return CategoryScopes[staffUserId] or empty list.
-            throw new NotImplementedException();
+            IReadOnlyList<int> ids = CategoryScopes.TryGetValue(staffUserId, out var list) ? list.ToList() : new List<int>();
+            return Task.FromResult(ids);
         }
 
         public Task<IReadOnlyList<User>> ListActiveStaffAsync()
         {
-            // TODO: Users where Role == Staff && IsActive.
-            throw new NotImplementedException();
+            IReadOnlyList<User> staff = Users.Where(u => u.Role == UserRole.Staff && u.IsActive).OrderBy(u => u.DisplayName).ToList();
+            return Task.FromResult(staff);
         }
     }
 }
+

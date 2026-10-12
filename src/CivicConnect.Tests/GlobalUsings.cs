@@ -1,4 +1,4 @@
-// FROZEN (owner: Aidan Smith). Every test file gets these automatically - no using lines needed.
+// Every test file gets these automatically, no using lines needed
 global using Xunit;
 global using Microsoft.AspNetCore.Mvc.Testing;
 global using CivicConnect.Common;
