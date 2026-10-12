@@ -1,6 +1,6 @@
 namespace CivicConnect.ViewModels
 {
-    // OWNER: Aidan Smith. COMPLETE data holders (validation rules = UI layer of the 3-layer validation).
+    // Complete data holders
     public class LoginViewModel
     {
         [Required, EmailAddress]
