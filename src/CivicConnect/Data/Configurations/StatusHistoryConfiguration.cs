@@ -11,7 +11,7 @@ namespace CivicConnect.Data
             builder.HasIndex(h => h.ServiceRequestId);
             builder.HasOne(h => h.ServiceRequest).WithMany(r => r.StatusHistory).HasForeignKey(h => h.ServiceRequestId).OnDelete(DeleteBehavior.Restrict);
             builder.HasOne(h => h.ChangedBy).WithMany().HasForeignKey(h => h.ChangedByUserId).OnDelete(DeleteBehavior.Restrict);
-            // TODO(Michael-John): optional - confirm no code path ever updates/deletes these rows (append-only rule).
+            // Append-only rule: IAuditLogRepository exposes Add/Get methods only, so no code path updates or deletes these rows.
         }
     }
 }
