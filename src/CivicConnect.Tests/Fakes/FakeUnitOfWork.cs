@@ -1,6 +1,6 @@
 namespace CivicConnect.Tests.Fakes
 {
-    /// <summary>COMPLETE. Counts saves and can simulate a concurrency conflict. OWNER: Aidan Smith.</summary>
+    // Counts saves and can simulate a concurrency conflict
     public class FakeUnitOfWork : IUnitOfWork
     {
         public int SaveCount { get; private set; }

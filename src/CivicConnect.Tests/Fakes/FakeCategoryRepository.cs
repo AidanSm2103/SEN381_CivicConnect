@@ -1,6 +1,6 @@
 namespace CivicConnect.Tests.Fakes
 {
-    /// <summary>In-memory ICategoryRepository. OWNER: Aidan Smith.</summary>
+    // In-memory ICategoryRepository
     public class FakeCategoryRepository : ICategoryRepository
     {
         public List<Category> Categories { get; } = new()
@@ -12,20 +12,12 @@ namespace CivicConnect.Tests.Fakes
 
         public Task<IReadOnlyList<Category>> ListActiveAsync()
         {
-            // TODO: active categories ordered by Name.
-            throw new NotImplementedException();
+            IReadOnlyList<Category> list = Categories.Where(c => c.IsActive).OrderBy(c => c.Name).ToList();
+            return Task.FromResult(list);
         }
 
-        public Task<Category?> GetByIdAsync(int id)
-        {
-            // TODO: FirstOrDefault by Id.
-            throw new NotImplementedException();
-        }
+        public Task<Category?> GetByIdAsync(int id) => Task.FromResult(Categories.FirstOrDefault(c => c.Id == id));
 
-        public Task<bool> IsActiveAsync(int id)
-        {
-            // TODO: Categories.Any(c => c.Id == id && c.IsActive).
-            throw new NotImplementedException();
-        }
+        public Task<bool> IsActiveAsync(int id) => Task.FromResult(Categories.Any(c => c.Id == id && c.IsActive));
     }
 }
