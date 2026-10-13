@@ -1,4 +1,4 @@
-# OWNER: Aidan Smith. Blocking quality gate for every PR into main (M3: CI + static/security checks).
+# Blocking quality gate for every PR into main 
 # In GitHub: Settings > Branches > main protection > "Require status checks" > select "build-test" and "dependency-audit".
 name: CI
 
@@ -44,3 +44,4 @@ jobs:
         run: |
           dotnet list src/CivicConnect/CivicConnect.sln package --vulnerable --include-transitive 2>&1 | tee audit.txt
           if grep -q "has the following vulnerable packages" audit.txt; then echo "Vulnerable packages found"; exit 1; fi
+

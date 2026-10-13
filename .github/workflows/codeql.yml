@@ -1,4 +1,4 @@
-# OWNER: Aidan Smith. Static security analysis (SAST). Report-only at first; make it blocking once findings are triaged.
+# Static security analysis 
 name: CodeQL
 
 on:

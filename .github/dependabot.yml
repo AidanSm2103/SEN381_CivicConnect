@@ -1,11 +1,20 @@
-# OWNER: Aidan Smith. Weekly dependency update PRs (NuGet + GitHub Actions).
+# Weekly dependency update PRs 
 version: 2
 updates:
   - package-ecosystem: "nuget"
     directory: "/src/CivicConnect"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "Microsoft.EntityFrameworkCore*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.NET.Test.Sdk"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "xunit*"
+        update-types: ["version-update:semver-major"]
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+
