@@ -9,8 +9,9 @@ namespace CivicConnect.Services
 
         public override Result Close(ServiceRequest request, DateTime now)
         {
-            // TODO: set Status = RequestStatus.Closed, ClosedAt = now; return Result.Success().
-            throw new NotImplementedException();
+            request.Status = RequestStatus.Closed;
+            request.ClosedAt = now;
+            return Result.Success();
         }
     }
 }
