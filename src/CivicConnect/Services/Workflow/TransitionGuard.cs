@@ -10,13 +10,20 @@ namespace CivicConnect.Services
             _authorisation = authorisation;
         }
 
-        public Task<Result> CheckAsync(ServiceRequest request, RequestStatus target)
+        public async Task<Result> CheckAsync(ServiceRequest request, RequestStatus target)
         {
-            // TODO: 1) _authorisation.EnsureCanWorkAsync(request) -> return failure if not ok (Forbidden / Unauthenticated).
-            //       2) RequestStateFactory.For(request.Status).CanMoveTo(target) false -> Failure(InvalidTransition,
-            //          $"Cannot move a request from {request.Status} to {target}.").
-            //       3) otherwise Success.
-            throw new NotImplementedException();
+            // 1) Who: staff in scope only (Management is read-only, requesters cannot work requests).
+            var work = await _authorisation.EnsureCanWorkAsync(request);
+            if (work.Failed) return work;
+
+            // 2) What: the state object says whether this move is legal.
+            if (!RequestStateFactory.For(request.Status).CanMoveTo(target))
+            {
+                return Result.Failure(ErrorCodes.InvalidTransition,
+                    $"Cannot move a request from {request.Status} to {target}.");
+            }
+
+            return Result.Success();
         }
     }
 }
