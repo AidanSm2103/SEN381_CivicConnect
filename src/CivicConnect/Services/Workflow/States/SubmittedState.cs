@@ -9,9 +9,13 @@ namespace CivicConnect.Services
 
         public override Result Assign(ServiceRequest request, int staffId, DateTime now)
         {
-            // TODO: if request.AssignedStaffId != null -> Failure(AlreadyAssigned). Otherwise set AssignedStaffId = staffId,
-            // AssignedAt = now, Status = RequestStatus.Assigned; return Result.Success().
-            throw new NotImplementedException();
+            if (request.AssignedStaffId != null)
+                return Result.Failure(ErrorCodes.AlreadyAssigned, "This request has already been assigned.");
+
+            request.AssignedStaffId = staffId;
+            request.AssignedAt = now;
+            request.Status = RequestStatus.Assigned;
+            return Result.Success();
         }
     }
 }
