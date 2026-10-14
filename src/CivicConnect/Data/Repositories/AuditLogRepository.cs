@@ -1,6 +1,6 @@
 namespace CivicConnect.Data
 {
-    /// <summary>OWNER: Michael-John Robinson.</summary>
+    /// <summary>OWNER: Michael-John Robinson. Append-only: add and read only.</summary>
     public class AuditLogRepository : IAuditLogRepository
     {
         private readonly AppDbContext _db;
@@ -10,28 +10,39 @@ namespace CivicConnect.Data
             _db = db;
         }
 
-        public Task AddStatusHistoryAsync(StatusHistory entry)
+        public async Task AddStatusHistoryAsync(StatusHistory entry)
         {
-            // TODO: await _db.StatusHistories.AddAsync(entry). No SaveChanges.
-            throw new NotImplementedException();
+            await _db.StatusHistories.AddAsync(entry);
         }
 
-        public Task AddCommentAsync(RequestComment comment)
+        public async Task AddCommentAsync(RequestComment comment)
         {
-            // TODO: await _db.RequestComments.AddAsync(comment). No SaveChanges.
-            throw new NotImplementedException();
+            await _db.RequestComments.AddAsync(comment);
         }
 
-        public Task<IReadOnlyList<StatusHistory>> GetHistoryAsync(int requestId)
+        public async Task<IReadOnlyList<StatusHistory>> GetHistoryAsync(int requestId)
         {
-            // TODO: where ServiceRequestId == requestId, Include ChangedBy, order by ChangedAt ascending, AsNoTracking.
-            throw new NotImplementedException();
+            return await _db.StatusHistories
+                .AsNoTracking()
+                .Include(h => h.ChangedBy)
+                .Where(h => h.ServiceRequestId == requestId)
+                .OrderBy(h => h.ChangedAt).ThenBy(h => h.Id)
+                .ToListAsync();
         }
 
-        public Task<IReadOnlyList<RequestComment>> GetCommentsAsync(int requestId, bool requesterVisibleOnly)
+        public async Task<IReadOnlyList<RequestComment>> GetCommentsAsync(int requestId, bool requesterVisibleOnly)
         {
-            // TODO: where ServiceRequestId == requestId (and VisibleToRequester when requesterVisibleOnly), Include Author, order by CreatedAt ascending.
-            throw new NotImplementedException();
+            var query = _db.RequestComments
+                .AsNoTracking()
+                .Include(c => c.Author)
+                .Where(c => c.ServiceRequestId == requestId);
+
+            if (requesterVisibleOnly)
+            {
+                query = query.Where(c => c.VisibleToRequester);
+            }
+
+            return await query.OrderBy(c => c.CreatedAt).ThenBy(c => c.Id).ToListAsync();
         }
     }
 }
