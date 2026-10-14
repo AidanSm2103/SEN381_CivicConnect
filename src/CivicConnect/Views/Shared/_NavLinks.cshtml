@@ -1,4 +1,4 @@
-@* OWNER: Aidan Smith. Role-based navigation links, rendered inside the layout's <ul class="navbar-nav">. *@
+@* Role-based navigation links, rendered inside the layout's navbar *@
 @if (User.Identity?.IsAuthenticated == true)
 {
     @if (User.IsInRole(RoleNames.Requester))

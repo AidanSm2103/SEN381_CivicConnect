@@ -1,21 +1,31 @@
 namespace CivicConnect.Services
 {
-    /// <summary>
-    /// OWNER: Aidan Smith. Wraps Microsoft.AspNetCore.Identity.PasswordHasher&lt;User&gt; (ships inside the ASP.NET Core
-    /// shared framework - NO extra NuGet package needed). Class name differs from the framework's to avoid ambiguity.
-    /// </summary>
+    // The framework hasher uses PBKDF2 (HMAC-SHA512, 128-bit random per-password salt, Identity v3 format) (NFR-004).
     public class IdentityPasswordHasher : IPasswordHasher
     {
+        private const int IterationCount = 220_000;
+
+        private static readonly Microsoft.AspNetCore.Identity.PasswordHasher<User> Inner = new(
+            Microsoft.Extensions.Options.Options.Create(new Microsoft.AspNetCore.Identity.PasswordHasherOptions { IterationCount = IterationCount }));
+
         public string Hash(string password)
         {
-            // TODO: new Microsoft.AspNetCore.Identity.PasswordHasher<User>().HashPassword(new User(), password)
-            throw new NotImplementedException();
+            ArgumentException.ThrowIfNullOrEmpty(password);
+            return Inner.HashPassword(new User(), password);
         }
 
         public bool Verify(string passwordHash, string providedPassword)
         {
-            // TODO: VerifyHashedPassword(new User(), passwordHash, providedPassword) and return true for Success or SuccessRehashNeeded.
-            throw new NotImplementedException();
+            if (string.IsNullOrEmpty(passwordHash) || string.IsNullOrEmpty(providedPassword)) return false;
+            try
+            {
+                var result = Inner.VerifyHashedPassword(new User(), passwordHash, providedPassword);
+                return result != Microsoft.AspNetCore.Identity.PasswordVerificationResult.Failed;
+            }
+            catch (FormatException)
+            {
+                return false; // corrupted/legacy hash string: treat as a failed login, never crash
+            }
         }
     }
 }

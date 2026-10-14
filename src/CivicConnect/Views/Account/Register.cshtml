@@ -1,6 +1,7 @@
 @model RegisterViewModel
-@* OWNER: Aidan Smith *@
-@{ ViewData["Title"] = "Register"; }
+@{
+    ViewData["Title"] = "Register";
+}
 <h2>Register as a requester</h2>
 <form asp-action="Register" method="post">
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -10,4 +11,6 @@
     <div><label asp-for="ConfirmPassword"></label><input asp-for="ConfirmPassword" /><span asp-validation-for="ConfirmPassword"></span></div>
     <button type="submit">Create account</button>
 </form>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,6 +1,6 @@
 namespace CivicConnect.Tests.Fakes
 {
-    /// <summary>COMPLETE. Lets a test "log in" as anyone. OWNER: Aidan Smith.</summary>
+    //Lets a test "log in" as anyone
     public class FakeCurrentUser : ICurrentUser
     {
         public bool IsAuthenticated { get; set; } = true;

@@ -9,8 +9,9 @@ namespace CivicConnect.Services
 
         public override Result Resolve(ServiceRequest request, DateTime now)
         {
-            // TODO: set Status = RequestStatus.Resolved, ResolvedAt = now; return Result.Success().
-            throw new NotImplementedException();
+            request.Status = RequestStatus.Resolved;
+            request.ResolvedAt = now;
+            return Result.Success();
         }
     }
 }

@@ -17,8 +17,10 @@ namespace CivicConnect.Data
             builder.HasOne(r => r.Requester).WithMany().HasForeignKey(r => r.RequesterId).OnDelete(DeleteBehavior.Restrict);
             builder.HasOne(r => r.AssignedStaff).WithMany().HasForeignKey(r => r.AssignedStaffId).OnDelete(DeleteBehavior.Restrict);
 
-            // TODO(Michael-John): CHECK constraint limiting Status to the five allowed values
-            // ('Submitted','Assigned','InProgress','Resolved','Closed') via builder.ToTable(t => t.HasCheckConstraint(...)).
+            // DB layer of the 3-layer validation: Status can only ever hold one of the five lifecycle values (TD-009).
+            builder.ToTable(t => t.HasCheckConstraint(
+                "CK_ServiceRequests_Status",
+                "[Status] IN ('Submitted','Assigned','InProgress','Resolved','Closed')"));
         }
     }
 }

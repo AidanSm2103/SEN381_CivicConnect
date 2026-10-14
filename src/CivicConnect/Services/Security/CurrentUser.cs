@@ -1,6 +1,6 @@
 namespace CivicConnect.Services
 {
-    /// <summary>OWNER: Aidan Smith. Reads the cookie principal via IHttpContextAccessor.</summary>
+    // Reads the cookie principal via IHttpContextAccessor
     public class CurrentUser : ICurrentUser
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -10,16 +10,32 @@ namespace CivicConnect.Services
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public bool IsAuthenticated => throw new NotImplementedException();
-        // TODO: _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated == true
+        private ClaimsPrincipal? Principal => _httpContextAccessor.HttpContext?.User;
 
-        public int? UserId => throw new NotImplementedException();
-        // TODO: parse the AppClaimTypes.UserId claim to int; null if missing/unparseable/not authenticated.
+        public bool IsAuthenticated => Principal?.Identity?.IsAuthenticated == true;
 
-        public UserRole? Role => throw new NotImplementedException();
-        // TODO: parse ClaimTypes.Role claim with Enum.TryParse<UserRole>; null if missing.
+        public int? UserId
+        {
+            get
+            {
+                if (!IsAuthenticated) return null;
+                var raw = Principal!.FindFirst(AppClaimTypes.UserId)?.Value;
+                return int.TryParse(raw, out var id) ? id : null;
+            }
+        }
 
-        public string DisplayName => throw new NotImplementedException();
-        // TODO: AppClaimTypes.DisplayName claim, or empty string when absent.
+        public UserRole? Role
+        {
+            get
+            {
+                if (!IsAuthenticated) return null;
+                var raw = Principal!.FindFirst(ClaimTypes.Role)?.Value;
+                // Accept only the exact role names, Enum.TryParse would also accept numeric strings
+                return raw != null && Enum.GetNames(typeof(UserRole)).Contains(raw) ? Enum.Parse<UserRole>(raw) : null;
+            }
+        }
+
+        public string DisplayName => IsAuthenticated ? Principal!.FindFirst(AppClaimTypes.DisplayName)?.Value ?? string.Empty : string.Empty;
     }
 }
+
