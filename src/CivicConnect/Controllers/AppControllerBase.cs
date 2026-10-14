@@ -1,12 +1,9 @@
 namespace CivicConnect.Controllers
 {
-    /// <summary>
-    /// OWNER: Aidan Smith. COMPLETE - do not change. Base class for every NEW controller so error handling is uniform.
-    /// Controllers stay thin: bind -> call ONE service method -> map result to a View/Redirect. No business rules, no DbContext.
-    /// </summary>
+    // Base class for every controller so error handling and post-login navigation are uniform
     public abstract class AppControllerBase : Controller
     {
-        /// <summary>Maps a failed Result to an HTTP outcome. Use for NotFound/Forbidden/Unauthenticated; for form errors use ModelState or TempData.</summary>
+        // Maps a failed Result to an HTTP outcome
         protected IActionResult MapFailure(Result result)
         {
             return result.ErrorCode switch
@@ -19,12 +16,33 @@ namespace CivicConnect.Controllers
             };
         }
 
-        /// <summary>True for failures that should become a plain HTTP outcome (404/403/401) rather than a message on the page.</summary>
+        // True for failures that should become a plain HTTP outcome rather than a message on the page
         protected static bool IsAccessFailure(Result result)
         {
             return result.ErrorCode == ErrorCodes.NotFound
                 || result.ErrorCode == ErrorCodes.Forbidden
                 || result.ErrorCode == ErrorCodes.Unauthenticated;
+        }
+
+        // Sends a user to the landing page of their role 
+        protected IActionResult RedirectToRoleHome(UserRole role)
+        {
+            return role switch
+            {
+                UserRole.Staff => RedirectToAction("Index", "StaffRequests"),
+                UserRole.Management => RedirectToAction("Dashboard", "Management"),
+                _ => RedirectToAction("MyRequests", "ServiceRequests")
+            };
+        }
+
+        // Same as RedirectToRoleHome but reads the role from the signed-in principal
+        protected IActionResult? RedirectToRoleHomeIfSignedIn()
+        {
+            if (User.Identity?.IsAuthenticated != true) return null;
+            if (User.IsInRole(RoleNames.Management)) return RedirectToRoleHome(UserRole.Management);
+            if (User.IsInRole(RoleNames.Staff)) return RedirectToRoleHome(UserRole.Staff);
+            if (User.IsInRole(RoleNames.Requester)) return RedirectToRoleHome(UserRole.Requester);
+            return null;
         }
     }
 }
