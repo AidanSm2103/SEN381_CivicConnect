@@ -15,19 +15,31 @@ namespace CivicConnect.Controllers
 
         // GET /Management/Dashboard
         [HttpGet]
-        public Task<IActionResult> Dashboard()
+        public async Task<IActionResult> Dashboard()
         {
-            // TODO: result = _reporting.GetOverviewAsync(); failure -> MapFailure; success -> View(new ManagementDashboardViewModel{...}).
-            throw new NotImplementedException();
+            var result = await _reporting.GetOverviewAsync();
+            if (result.Failed) return MapFailure(result);
+
+            return View(new ManagementDashboardViewModel
+            {
+                StatusCounts = result.Value!.StatusCounts,
+                StaffActivity = result.Value.StaffActivity
+            });
         }
 
         // GET /Management/Requests?Status=...&CategoryId=...
         [HttpGet]
-        public Task<IActionResult> Requests(RequestSearchCriteria criteria)
+        public async Task<IActionResult> Requests(RequestSearchCriteria criteria)
         {
-            // TODO: page = _requests.SearchAsync(criteria) -> RequestSearchViewModel (same shape as StaffRequests/Index, IncludeClosed allowed).
-            // Categories SelectList: use _requests.ListActiveCategoriesAsync().
-            throw new NotImplementedException();
+            var page = await _requests.SearchAsync(criteria);
+            var categories = await _requests.ListActiveCategoriesAsync();
+
+            return View(new RequestSearchViewModel
+            {
+                Criteria = criteria,
+                Results = RequestMapper.ToPagedListItems(page),
+                Categories = new SelectList(categories, nameof(Category.Id), nameof(Category.Name), criteria.CategoryId)
+            });
         }
     }
 }

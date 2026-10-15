@@ -12,12 +12,18 @@ namespace CivicConnect.Services
             _authorisation = authorisation;
         }
 
-        public Task<Result<ManagementOverview>> GetOverviewAsync()
+        public async Task<Result<ManagementOverview>> GetOverviewAsync()
         {
-            // TODO: _authorisation.EnsureInRole(UserRole.Management) -> map failure to Result<ManagementOverview>.Failure(code, message).
-            // Then fill ManagementOverview from _reporting.GetStatusCountsAsync() and GetStaffActivityAsync().
-            // NOTE: "overdue" (FR-014) is still undefined - leave out until the team defines it (see controlled-change record).
-            throw new NotImplementedException();
+            var role = _authorisation.EnsureInRole(UserRole.Management);
+            if (role.Failed) return Result<ManagementOverview>.Failure(role.ErrorCode!, role.ErrorMessage!);
+
+            // "Overdue" (FR-014) is not defined yet - deliberately left out until the team agrees a definition (controlled change).
+            var overview = new ManagementOverview
+            {
+                StatusCounts = await _reporting.GetStatusCountsAsync(),
+                StaffActivity = await _reporting.GetStaffActivityAsync()
+            };
+            return Result<ManagementOverview>.Success(overview);
         }
     }
 }
