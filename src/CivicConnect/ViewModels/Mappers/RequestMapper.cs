@@ -5,23 +5,63 @@ namespace CivicConnect.ViewModels
     {
         public static RequestListItemViewModel ToListItem(ServiceRequest request)
         {
-            // TODO: copy Id, ReferenceNo, Status, SubmittedAt; CategoryName = request.Category?.Name ?? ""; AssignedStaffName = request.AssignedStaff?.DisplayName.
-            throw new NotImplementedException();
+            return new RequestListItemViewModel
+            {
+                Id = request.Id,
+                ReferenceNo = request.ReferenceNo,
+                CategoryName = request.Category?.Name ?? string.Empty,
+                Status = request.Status,
+                SubmittedAt = request.SubmittedAt,
+                AssignedStaffName = request.AssignedStaff?.DisplayName
+            };
         }
 
         public static RequestDetailsViewModel ToDetails(ServiceRequest request, AvailableActions actions, IReadOnlyList<User> assignableStaff)
         {
-            // TODO: map scalar fields (RequesterName = request.Requester?.DisplayName), RowVersion, Actions = actions;
-            // History = request.StatusHistory ordered by ChangedAt -> HistoryItemViewModel (ChangedByName = ChangedBy?.DisplayName);
-            // Comments = request.Comments ordered by CreatedAt -> CommentItemViewModel (AuthorName = Author?.DisplayName);
-            // AssignableStaff = new SelectList(assignableStaff, nameof(User.Id), nameof(User.DisplayName)).
-            throw new NotImplementedException();
+            return new RequestDetailsViewModel
+            {
+                Id = request.Id,
+                ReferenceNo = request.ReferenceNo,
+                CategoryName = request.Category?.Name ?? string.Empty,
+                Description = request.Description,
+                Status = request.Status,
+                SubmittedAt = request.SubmittedAt,
+                RequesterName = request.Requester?.DisplayName ?? string.Empty,
+                AssignedStaffName = request.AssignedStaff?.DisplayName,
+                RowVersion = request.RowVersion,
+                Actions = actions,
+                History = request.StatusHistory
+                    .OrderBy(h => h.ChangedAt).ThenBy(h => h.Id)
+                    .Select(h => new HistoryItemViewModel
+                    {
+                        FromStatus = h.FromStatus,
+                        ToStatus = h.ToStatus,
+                        ChangedByName = h.ChangedBy?.DisplayName ?? string.Empty,
+                        ChangedAt = h.ChangedAt,
+                        Note = h.Note
+                    }).ToList(),
+                Comments = request.Comments
+                    .OrderBy(c => c.CreatedAt).ThenBy(c => c.Id)
+                    .Select(c => new CommentItemViewModel
+                    {
+                        Kind = c.Kind,
+                        Body = c.Body,
+                        AuthorName = c.Author?.DisplayName ?? string.Empty,
+                        CreatedAt = c.CreatedAt
+                    }).ToList(),
+                AssignableStaff = new SelectList(assignableStaff, nameof(User.Id), nameof(User.DisplayName))
+            };
         }
 
         public static PagedResult<RequestListItemViewModel> ToPagedListItems(PagedResult<ServiceRequest> page)
         {
-            // TODO: new PagedResult<RequestListItemViewModel> { Items = page.Items.Select(ToListItem).ToList(), TotalCount, Page, PageSize }.
-            throw new NotImplementedException();
+            return new PagedResult<RequestListItemViewModel>
+            {
+                Items = page.Items.Select(ToListItem).ToList(),
+                TotalCount = page.TotalCount,
+                Page = page.Page,
+                PageSize = page.PageSize
+            };
         }
     }
 }

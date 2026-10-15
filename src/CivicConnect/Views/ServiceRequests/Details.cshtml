@@ -9,7 +9,7 @@
 <p>Assigned to: @(Model.AssignedStaffName ?? "Not yet assigned")</p>
 
 <h3>Updates</h3>
-@* TODO(Enrique): show Model.Comments (feedback only - the service already strips staff-only notes) *@
+@* Feedback only - the service already strips staff-only notes. *@
 @foreach (var comment in Model.Comments)
 {
     <p>@comment.CreatedAt: @comment.Body</p>
