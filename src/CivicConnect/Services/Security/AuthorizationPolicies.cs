@@ -3,7 +3,7 @@ namespace CivicConnect.Services
 
     // Registers the named policies called from SecurityServiceExtensions
     // The fine-grained check called inside every service method (NFR-003 single enforcement point)
-   
+
     public static class AuthorizationPolicies
     {
         public static void Register(AuthorizationOptions options)
