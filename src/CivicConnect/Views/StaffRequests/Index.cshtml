@@ -10,7 +10,13 @@
     <button type="submit">Filter</button>
 </form>
 <table class="table">
-    <thead><tr><th>Reference</th><th>Category</th><th>Status</th><th>Assigned to</th><th>Submitted</th><th></th></tr></thead>
+    <thead><tr>
+        <th><a asp-action="Index" asp-route-SortBy="ReferenceNo" asp-route-Descending="@(Model.Criteria.SortBy == "ReferenceNo" && !Model.Criteria.Descending)" asp-route-Text="@Model.Criteria.Text" asp-route-CategoryId="@Model.Criteria.CategoryId" asp-route-Status="@Model.Criteria.Status" asp-route-IncludeClosed="@Model.Criteria.IncludeClosed">Reference</a></th>
+        <th><a asp-action="Index" asp-route-SortBy="Category" asp-route-Descending="@(Model.Criteria.SortBy == "Category" && !Model.Criteria.Descending)" asp-route-Text="@Model.Criteria.Text" asp-route-CategoryId="@Model.Criteria.CategoryId" asp-route-Status="@Model.Criteria.Status" asp-route-IncludeClosed="@Model.Criteria.IncludeClosed">Category</a></th>
+        <th><a asp-action="Index" asp-route-SortBy="Status" asp-route-Descending="@(Model.Criteria.SortBy == "Status" && !Model.Criteria.Descending)" asp-route-Text="@Model.Criteria.Text" asp-route-CategoryId="@Model.Criteria.CategoryId" asp-route-Status="@Model.Criteria.Status" asp-route-IncludeClosed="@Model.Criteria.IncludeClosed">Status</a></th>
+        <th>Assigned to</th>
+        <th><a asp-action="Index" asp-route-SortBy="SubmittedAt" asp-route-Descending="@(Model.Criteria.SortBy == "SubmittedAt" && !Model.Criteria.Descending)" asp-route-Text="@Model.Criteria.Text" asp-route-CategoryId="@Model.Criteria.CategoryId" asp-route-Status="@Model.Criteria.Status" asp-route-IncludeClosed="@Model.Criteria.IncludeClosed">Submitted</a></th>
+        <th></th></tr></thead>
     <tbody>
     @foreach (var r in Model.Results.Items)
     {
@@ -25,4 +31,22 @@
     }
     </tbody>
 </table>
-@* TODO(Enrique): paging links using Model.Results.Page / TotalPages; sorting links using Criteria.SortBy / Descending. *@
+@{
+    var c = Model.Criteria;
+    var current = Model.Results.Page;
+    var total = Model.Results.TotalPages;
+}
+@if (total > 1)
+{
+    <nav aria-label="Paging">
+        @if (current > 1)
+        {
+            <a asp-action="@ViewContext.RouteData.Values["action"]" asp-route-Page="@(current - 1)" asp-route-Text="@c.Text" asp-route-CategoryId="@c.CategoryId" asp-route-Status="@c.Status" asp-route-IncludeClosed="@c.IncludeClosed" asp-route-SortBy="@c.SortBy" asp-route-Descending="@c.Descending">Previous</a>
+        }
+        <span>Page @current of @total</span>
+        @if (current < total)
+        {
+            <a asp-action="@ViewContext.RouteData.Values["action"]" asp-route-Page="@(current + 1)" asp-route-Text="@c.Text" asp-route-CategoryId="@c.CategoryId" asp-route-Status="@c.Status" asp-route-IncludeClosed="@c.IncludeClosed" asp-route-SortBy="@c.SortBy" asp-route-Descending="@c.Descending">Next</a>
+        }
+    </nav>
+}
