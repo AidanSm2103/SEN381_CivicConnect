@@ -1,5 +1,5 @@
 ﻿namespace CivicConnect.Tests.Fakes
-{  
+{
     /// Wires the REAL services to the in-memory fakes so service-level tests stay short 
     public class ServiceHarness
     {
