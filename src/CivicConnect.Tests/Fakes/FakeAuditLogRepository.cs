@@ -1,6 +1,6 @@
 namespace CivicConnect.Tests.Fakes
 {
-   // In-memory IAuditLogRepository. Tests assert on Histories/Comments
+    // In-memory IAuditLogRepository. Tests assert on Histories/Comments
     public class FakeAuditLogRepository : IAuditLogRepository
     {
         public List<StatusHistory> Histories { get; } = new();
