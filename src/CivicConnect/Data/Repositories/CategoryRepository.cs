@@ -10,23 +10,23 @@ namespace CivicConnect.Data
             _db = db;
         }
 
-        public Task<IReadOnlyList<Category>> ListActiveAsync()
+        public async Task<IReadOnlyList<Category>> ListActiveAsync()
         {
-            // TODO: port the query from the old ServiceRequestsController.LoadCategories():
-            //   _db.Categories.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync()
-            throw new NotImplementedException();
+            return await _db.Categories
+                .AsNoTracking()
+                .Where(c => c.IsActive)
+                .OrderBy(c => c.Name)
+                .ToListAsync();
         }
 
         public Task<Category?> GetByIdAsync(int id)
         {
-            // TODO: FirstOrDefaultAsync by Id.
-            throw new NotImplementedException();
+            return _db.Categories.FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public Task<bool> IsActiveAsync(int id)
         {
-            // TODO: port from old controller: _db.Categories.AnyAsync(c => c.Id == id && c.IsActive)
-            throw new NotImplementedException();
+            return _db.Categories.AnyAsync(c => c.Id == id && c.IsActive);
         }
     }
 }

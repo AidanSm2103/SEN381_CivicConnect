@@ -10,40 +10,47 @@ namespace CivicConnect.Data
             _db = db;
         }
 
+        // SQL Server's default collation is case-insensitive; the explicit ToLower keeps the rule identical on any provider.
+        private static string Normalise(string email) => (email ?? string.Empty).Trim().ToLowerInvariant();
+
         public Task<User?> GetByIdAsync(int id)
         {
-            // TODO: FirstOrDefaultAsync by Id.
-            throw new NotImplementedException();
+            return _db.Users.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public Task<User?> GetByEmailAsync(string email)
         {
-            // TODO: case-insensitive match on Email (normalise with ToLower / ToUpperInvariant on both sides).
-            throw new NotImplementedException();
+            var normalised = Normalise(email);
+            return _db.Users.FirstOrDefaultAsync(u => u.Email.ToLower() == normalised);
         }
 
         public Task<bool> EmailExistsAsync(string email)
         {
-            // TODO: AnyAsync with the same case-insensitive rule as GetByEmailAsync.
-            throw new NotImplementedException();
+            var normalised = Normalise(email);
+            return _db.Users.AnyAsync(u => u.Email.ToLower() == normalised);
         }
 
-        public Task AddAsync(User user)
+        public async Task AddAsync(User user)
         {
-            // TODO: await _db.Users.AddAsync(user). No SaveChanges.
-            throw new NotImplementedException();
+            await _db.Users.AddAsync(user);
         }
 
-        public Task<IReadOnlyList<int>> GetCategoryScopeIdsAsync(int staffUserId)
+        public async Task<IReadOnlyList<int>> GetCategoryScopeIdsAsync(int staffUserId)
         {
-            // TODO: select CategoryId from StaffCategoryScopes where UserId == staffUserId.
-            throw new NotImplementedException();
+            return await _db.StaffCategoryScopes
+                .AsNoTracking()
+                .Where(s => s.UserId == staffUserId)
+                .Select(s => s.CategoryId)
+                .ToListAsync();
         }
 
-        public Task<IReadOnlyList<User>> ListActiveStaffAsync()
+        public async Task<IReadOnlyList<User>> ListActiveStaffAsync()
         {
-            // TODO: Users where Role == UserRole.Staff && IsActive, order by DisplayName, AsNoTracking.
-            throw new NotImplementedException();
+            return await _db.Users
+                .AsNoTracking()
+                .Where(u => u.Role == UserRole.Staff && u.IsActive)
+                .OrderBy(u => u.DisplayName)
+                .ToListAsync();
         }
     }
 }
