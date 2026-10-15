@@ -6,7 +6,7 @@ namespace CivicConnect.Data
         /// <summary>Tracked entity (will be modified by workflow). Null if not found. No Includes.</summary>
         Task<ServiceRequest?> GetByIdAsync(int id);
 
-        /// <summary>Request plus Category, Requester, AssignedStaff, StatusHistory (with ChangedBy) and Comments (with Author). Null if not found.</summary>
+        /// <summary>Read-only (untracked) request plus Category, Requester, AssignedStaff, StatusHistory (with ChangedBy) and Comments (with Author). Null if not found.</summary>
         Task<ServiceRequest?> GetByIdWithDetailsAsync(int id);
 
         /// <summary>All requests submitted by one requester, newest first, Category included (FR-003, FR-004).</summary>

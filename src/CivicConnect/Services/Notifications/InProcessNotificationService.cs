@@ -1,8 +1,9 @@
 namespace CivicConnect.Services
 {
-    /// <summary>OWNER: Aidan Smith.</summary>
+    // In-app requester feedback written in the same transaction as the status change (D-003)
     public class InProcessNotificationService : INotificationService
     {
+        private const int MaxBodyLength = 2000;
         private readonly IAuditLogRepository _auditLog;
 
         public InProcessNotificationService(IAuditLogRepository auditLog)
@@ -12,17 +13,44 @@ namespace CivicConnect.Services
 
         public Task NotifyStatusChangedAsync(StatusChangeNotice notice)
         {
-            // TODO: compose a plain-language message, e.g. "Your request CC-2026-000123 is now In Progress." (+ staff comment if present).
-            // Create RequestComment { ServiceRequestId = notice.RequestId, Kind = Feedback, Body, AuthorId = notice.ChangedByUserId,
-            // CreatedAt = notice.ChangedAt, VisibleToRequester = true } and stage it with _auditLog.AddCommentAsync. DO NOT save.
-            // Never put requester contact details in the message.
-            throw new NotImplementedException();
+            var body = BuildMessage(notice);
+            if (body.Length > MaxBodyLength) body = body.Substring(0, MaxBodyLength);
+
+            var comment = new RequestComment
+            {
+                ServiceRequestId = notice.RequestId,
+                Kind = CommentKind.Feedback,
+                Body = body,
+                AuthorId = notice.ChangedByUserId,
+                CreatedAt = notice.ChangedAt,
+                VisibleToRequester = true
+            };
+            return _auditLog.AddCommentAsync(comment);   // staged only, never saves
         }
 
-        public Task<IReadOnlyList<RequestComment>> GetFeedbackAsync(int requestId)
+        public async Task<IReadOnlyList<RequestComment>> GetFeedbackAsync(int requestId)
         {
-            // TODO: _auditLog.GetCommentsAsync(requestId, requesterVisibleOnly: true) filtered to Kind == Feedback.
-            throw new NotImplementedException();
+            var comments = await _auditLog.GetCommentsAsync(requestId, requesterVisibleOnly: true);
+            return comments.Where(c => c.Kind == CommentKind.Feedback).ToList();
+        }
+
+        // Plain language, no contact details or internal notes
+        private static string BuildMessage(StatusChangeNotice notice)
+        {
+            var reference = notice.ReferenceNo;
+            var text = notice.ToStatus switch
+            {
+                RequestStatus.Submitted => $"We have received your request {reference}.",
+                RequestStatus.Assigned => $"Your request {reference} has been accepted and assigned to a staff member.",
+                RequestStatus.InProgress => $"Work has started on your request {reference}.",
+                RequestStatus.Resolved => $"Your request {reference} has been resolved.",
+                RequestStatus.Closed => $"Your request {reference} has been closed.",
+                _ => $"The status of your request {reference} has changed."
+            };
+            if (!string.IsNullOrWhiteSpace(notice.StaffComment))
+                text += " Staff comment: " + notice.StaffComment.Trim();
+            return text;
         }
     }
 }
+

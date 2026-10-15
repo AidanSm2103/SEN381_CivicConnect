@@ -1,14 +1,21 @@
 namespace CivicConnect.Services
 {
-    /// <summary>OWNER: Aidan Smith. Builds the cookie principal after a successful login.</summary>
+    // Builds the cookie principal after a successful login
     public static class ClaimsPrincipalFactory
     {
         public static ClaimsPrincipal Create(User user)
         {
-            // TODO: claims = [ AppClaimTypes.UserId = user.Id, AppClaimTypes.DisplayName = user.DisplayName,
-            //                  ClaimTypes.Name = user.Email, ClaimTypes.Role = user.Role.ToString() ].
-            // Identity authenticationType must be CookieAuthenticationDefaults.AuthenticationScheme.
-            throw new NotImplementedException();
+            ArgumentNullException.ThrowIfNull(user);
+            var claims = new List<Claim>
+            {
+                new Claim(AppClaimTypes.UserId, user.Id.ToString()),
+                new Claim(AppClaimTypes.DisplayName, user.DisplayName),
+                new Claim(ClaimTypes.Name, user.Email),
+                new Claim(ClaimTypes.Role, user.Role.ToString())
+            };
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.Name, ClaimTypes.Role);
+            return new ClaimsPrincipal(identity);
         }
     }
 }
+

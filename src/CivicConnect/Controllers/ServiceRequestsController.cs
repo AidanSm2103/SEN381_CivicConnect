@@ -13,44 +13,67 @@ namespace CivicConnect.Controllers
 
         // GET: /ServiceRequests/Create
         [HttpGet]
-        public Task<IActionResult> Create()
+        public async Task<IActionResult> Create()
         {
-            // TODO: vm = new CreateRequestViewModel { Categories = await BuildCategoryListAsync(null) }; return View(vm).
-            throw new NotImplementedException();
+            var vm = new CreateRequestViewModel { Categories = await BuildCategoryListAsync(null) };
+            return View(vm);
         }
 
         // POST: /ServiceRequests/Create
         [HttpPost, ValidateAntiForgeryToken]
-        public Task<IActionResult> Create(CreateRequestViewModel model)
+        public async Task<IActionResult> Create(CreateRequestViewModel model)
         {
-            // TODO: if !ModelState.IsValid -> reload Categories (keep selected id) and View(model).
-            // Call _requests.SubmitAsync(new SubmitRequestCommand{...}). ValidationFailed -> ModelState error on CategoryId/Description + View(model).
-            // Access failure -> MapFailure. Success -> RedirectToAction(nameof(Details), new { id = result.Value!.Id }).
-            throw new NotImplementedException();
+            if (!ModelState.IsValid)
+            {
+                model.Categories = await BuildCategoryListAsync(model.CategoryId);
+                return View(model);
+            }
+
+            var result = await _requests.SubmitAsync(new SubmitRequestCommand
+            {
+                CategoryId = model.CategoryId,
+                Description = model.Description
+            });
+
+            if (result.Failed)
+            {
+                if (IsAccessFailure(result)) return MapFailure(result);
+
+                // Business/validation failure: show it on the form, keep what the user typed.
+                ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "The request could not be submitted.");
+                model.Categories = await BuildCategoryListAsync(model.CategoryId);
+                return View(model);
+            }
+
+            return RedirectToAction(nameof(Details), new { id = result.Value!.Id });
         }
 
         // GET: /ServiceRequests/Details/5
         [HttpGet]
-        public Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            // TODO: _requests.GetDetailsAsync(id); failure -> MapFailure; success -> View(RequestMapper.ToDetails(request, new AvailableActions(), empty staff list)).
-            throw new NotImplementedException();
+            var result = await _requests.GetDetailsAsync(id);
+            if (result.Failed) return MapFailure(result);
+
+            return View(RequestMapper.ToDetails(result.Value!, new AvailableActions(), new List<User>()));
         }
 
         // GET: /ServiceRequests/MyRequests
         [HttpGet]
-        public Task<IActionResult> MyRequests()
+        public async Task<IActionResult> MyRequests()
         {
-            // TODO: _requests.ListMineAsync() -> map each with RequestMapper.ToListItem -> View(new MyRequestsViewModel{...}).
-            throw new NotImplementedException();
+            var mine = await _requests.ListMineAsync();
+            return View(new MyRequestsViewModel
+            {
+                Requests = mine.Select(RequestMapper.ToListItem).ToList()
+            });
         }
 
         // Only active categories are offered to requesters (FR-002).
-        private Task<SelectList> BuildCategoryListAsync(int? selectedId)
+        private async Task<SelectList> BuildCategoryListAsync(int? selectedId)
         {
-            // TODO: var categories = await _requests.ListActiveCategoriesAsync();
-            // return new SelectList(categories, nameof(Category.Id), nameof(Category.Name), selectedId);
-            throw new NotImplementedException();
+            var categories = await _requests.ListActiveCategoriesAsync();
+            return new SelectList(categories, nameof(Category.Id), nameof(Category.Name), selectedId);
         }
     }
 }

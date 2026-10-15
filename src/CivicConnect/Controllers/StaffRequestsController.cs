@@ -13,76 +13,134 @@ namespace CivicConnect.Controllers
             _workflow = workflow;
         }
 
-        // GET /StaffRequests?Status=...&CategoryId=...&Text=...
+        // GET /StaffRequests/Index?Status=...&CategoryId=...&Text=...
         [HttpGet]
-        public Task<IActionResult> Index(RequestSearchCriteria criteria)
+        public async Task<IActionResult> Index(RequestSearchCriteria criteria)
         {
-            // TODO: page = _requests.SearchAsync(criteria); vm = new RequestSearchViewModel { Criteria, Results = RequestMapper.ToPagedListItems(page), Categories = active categories SelectList }.
-            throw new NotImplementedException();
+            var page = await _requests.SearchAsync(criteria);
+            var categories = await _requests.ListActiveCategoriesAsync();
+
+            return View(new RequestSearchViewModel
+            {
+                Criteria = criteria,
+                Results = RequestMapper.ToPagedListItems(page),
+                Categories = new SelectList(categories, nameof(Category.Id), nameof(Category.Name), criteria.CategoryId)
+            });
         }
 
         // GET /StaffRequests/Details/5
         [HttpGet]
-        public Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            // TODO: _requests.GetDetailsAsync(id) (failure -> MapFailure); actions = _workflow.GetAvailableActionsAsync(request);
-            // staff = _workflow.ListAssignableStaffAsync(); return View(RequestMapper.ToDetails(request, actions, staff)).
-            throw new NotImplementedException();
+            var result = await _requests.GetDetailsAsync(id);
+            if (result.Failed) return MapFailure(result);
+
+            var request = result.Value!;
+            var actions = await _workflow.GetAvailableActionsAsync(request);
+            var staff = await _workflow.ListAssignableStaffAsync();
+            return View(RequestMapper.ToDetails(request, actions, staff));
         }
 
         // POST /StaffRequests/Accept
         [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = PolicyNames.StaffAccess)]
-        public Task<IActionResult> Accept(RequestActionForm form)
+        public async Task<IActionResult> Accept(RequestActionForm form)
         {
-            // TODO: _workflow.AcceptAsync(new AcceptRequestCommand{...}); then RedirectToActionAfter(result, form.RequestId).
-            throw new NotImplementedException();
+            var result = await _workflow.AcceptAsync(new AcceptRequestCommand { RequestId = form.RequestId, RowVersion = form.RowVersion });
+            return RedirectToActionAfter(result, form.RequestId, "Request accepted.");
         }
 
         // POST /StaffRequests/Assign
         [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = PolicyNames.StaffAccess)]
-        public Task<IActionResult> Assign(AssignForm form)
+        public async Task<IActionResult> Assign(AssignForm form)
         {
-            // TODO: _workflow.AssignAsync(new AssignRequestCommand{...}); then RedirectToActionAfter.
-            throw new NotImplementedException();
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "Please choose a staff member.";
+                return RedirectToAction(nameof(Details), new { id = form.RequestId });
+            }
+
+            var result = await _workflow.AssignAsync(new AssignRequestCommand
+            {
+                RequestId = form.RequestId,
+                AssigneeStaffId = form.AssigneeStaffId,
+                RowVersion = form.RowVersion
+            });
+            return RedirectToActionAfter(result, form.RequestId, "Request assigned.");
         }
 
         // POST /StaffRequests/StartWork
         [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = PolicyNames.StaffAccess)]
-        public Task<IActionResult> StartWork(RequestActionForm form)
+        public async Task<IActionResult> StartWork(RequestActionForm form)
         {
-            // TODO: _workflow.ChangeStatusAsync(new ChangeStatusCommand{ TargetStatus = RequestStatus.InProgress, ...}); then RedirectToActionAfter.
-            throw new NotImplementedException();
+            var result = await _workflow.ChangeStatusAsync(new ChangeStatusCommand
+            {
+                RequestId = form.RequestId,
+                TargetStatus = RequestStatus.InProgress,
+                RowVersion = form.RowVersion
+            });
+            return RedirectToActionAfter(result, form.RequestId, "Work started.");
         }
 
         // POST /StaffRequests/Resolve
         [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = PolicyNames.StaffAccess)]
-        public Task<IActionResult> Resolve(ResolveForm form)
+        public async Task<IActionResult> Resolve(ResolveForm form)
         {
-            // TODO: ModelState invalid -> TempData["Error"] + redirect to Details. _workflow.ResolveAsync(...); RedirectToActionAfter.
-            throw new NotImplementedException();
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "A resolution note is required.";
+                return RedirectToAction(nameof(Details), new { id = form.RequestId });
+            }
+
+            var result = await _workflow.ResolveAsync(new ResolveRequestCommand
+            {
+                RequestId = form.RequestId,
+                ResolutionNote = form.ResolutionNote,
+                RowVersion = form.RowVersion
+            });
+            return RedirectToActionAfter(result, form.RequestId, "Request resolved.");
         }
 
         // POST /StaffRequests/Close
         [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = PolicyNames.StaffAccess)]
-        public Task<IActionResult> Close(CloseForm form)
+        public async Task<IActionResult> Close(CloseForm form)
         {
-            // TODO: _workflow.CloseAsync(...); RedirectToActionAfter.
-            throw new NotImplementedException();
+            var result = await _workflow.CloseAsync(new CloseRequestCommand
+            {
+                RequestId = form.RequestId,
+                Note = form.Note,
+                RowVersion = form.RowVersion
+            });
+            return RedirectToActionAfter(result, form.RequestId, "Request closed.");
         }
 
         // POST /StaffRequests/AddNote
         [HttpPost, ValidateAntiForgeryToken, Authorize(Policy = PolicyNames.StaffAccess)]
-        public Task<IActionResult> AddNote(AddNoteForm form)
+        public async Task<IActionResult> AddNote(AddNoteForm form)
         {
-            // TODO: _workflow.AddNoteAsync(...); RedirectToActionAfter.
-            throw new NotImplementedException();
+            if (!ModelState.IsValid)
+            {
+                TempData["Error"] = "A note cannot be empty.";
+                return RedirectToAction(nameof(Details), new { id = form.RequestId });
+            }
+
+            var result = await _workflow.AddNoteAsync(new AddNoteCommand { RequestId = form.RequestId, Body = form.Body });
+            return RedirectToActionAfter(result, form.RequestId, "Note added.");
         }
 
         // Shared tail of every POST: access failure -> MapFailure; business failure -> TempData["Error"]; success -> TempData["Success"]; then back to Details.
-        private IActionResult RedirectToActionAfter(Result result, int requestId)
+        private IActionResult RedirectToActionAfter(Result result, int requestId, string successMessage = "Done.")
         {
-            // TODO: implement exactly as described above, ending in RedirectToAction(nameof(Details), new { id = requestId }).
-            throw new NotImplementedException();
+            if (result.Failed)
+            {
+                if (IsAccessFailure(result)) return MapFailure(result);
+                TempData["Error"] = result.ErrorMessage;
+            }
+            else
+            {
+                TempData["Success"] = successMessage;
+            }
+
+            return RedirectToAction(nameof(Details), new { id = requestId });
         }
     }
 }

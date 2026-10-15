@@ -10,6 +10,7 @@ namespace CivicConnect.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly ICurrentUser _currentUser;
         private readonly IClock _clock;
+        private const int MaxDescriptionLength = 2000;
 
         public RequestService(
             IRequestRepository requests,
@@ -31,41 +32,85 @@ namespace CivicConnect.Services
 
         public Task<IReadOnlyList<Category>> ListActiveCategoriesAsync()
         {
-            // TODO: return _categories.ListActiveAsync().
-            throw new NotImplementedException();
+            return _categories.ListActiveAsync();
         }
 
-        public Task<Result<ServiceRequest>> SubmitAsync(SubmitRequestCommand command)
+        public async Task<Result<ServiceRequest>> SubmitAsync(SubmitRequestCommand command)
         {
-            // TODO (FR-001, FR-002, NFR-008, NFR-010):
-            // 1. _authorisation.EnsureInRole(UserRole.Requester) -> return failure if not ok.
-            // 2. SERVICE-LAYER validation: Description not blank and <= 2000 chars; _categories.IsActiveAsync(command.CategoryId)
-            //    (this replaces the old controller check "Categories.Any(c => c.Id == id && c.IsActive)") -> ValidationFailed.
-            // 3. Inside _unitOfWork.ExecuteInTransactionAsync: build ServiceRequest { ReferenceNo = await _requests.NextReferenceNoAsync(),
-            //    CategoryId, Description (trimmed), RequesterId = current user, Status = Submitted, SubmittedAt = _clock.UtcNow };
-            //    _requests.AddAsync; _audit.RecordStatusChangeAsync(request, null, Submitted, "Request submitted").
-            // 4. Return Success(request). If anything throws, nothing is saved (atomic).
-            throw new NotImplementedException();
+            // 1. Role check (requesters only).
+            var role = _authorisation.EnsureInRole(UserRole.Requester);
+            if (role.Failed) return Result<ServiceRequest>.Failure(role.ErrorCode!, role.ErrorMessage!);
+
+            // 2. Service-layer validation (middle layer of the three-layer rule; the view model is the first, the DB the third).
+            var description = (command.Description ?? string.Empty).Trim();
+            if (description.Length == 0)
+                return Result<ServiceRequest>.Failure(ErrorCodes.ValidationFailed, "Please describe the problem.");
+            if (description.Length > MaxDescriptionLength)
+                return Result<ServiceRequest>.Failure(ErrorCodes.ValidationFailed, $"The description must be at most {MaxDescriptionLength} characters.");
+            if (!await _categories.IsActiveAsync(command.CategoryId))
+                return Result<ServiceRequest>.Failure(ErrorCodes.ValidationFailed, "Please select a valid category.");
+
+            // 3. One transaction: the request and its first audit row commit together or not at all (NFR-010).
+            ServiceRequest? created = null;
+            await _unitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                var request = new ServiceRequest
+                {
+                    ReferenceNo = await _requests.NextReferenceNoAsync(),
+                    CategoryId = command.CategoryId,
+                    Description = description,
+                    RequesterId = _currentUser.UserId!.Value,
+                    Status = RequestStatus.Submitted,
+                    SubmittedAt = _clock.UtcNow
+                };
+
+                // Audit first: the request has no Id yet, so the history row is linked by navigation and EF inserts both together.
+                await _audit.RecordStatusChangeAsync(request, null, RequestStatus.Submitted, "Request submitted");
+                await _requests.AddAsync(request);
+                created = request;
+            });
+
+            return Result<ServiceRequest>.Success(created!);
         }
 
-        public Task<Result<ServiceRequest>> GetDetailsAsync(int requestId)
+        public async Task<Result<ServiceRequest>> GetDetailsAsync(int requestId)
         {
-            // TODO (FR-008): _requests.GetByIdWithDetailsAsync -> null => NotFound; _authorisation.EnsureCanViewAsync(request) => Forbidden;
-            // for a Requester, strip comments where VisibleToRequester == false (staff resolution notes) before returning.
-            throw new NotImplementedException();
+            var auth = _authorisation.EnsureAuthenticated();
+            if (auth.Failed) return Result<ServiceRequest>.Failure(auth.ErrorCode!, auth.ErrorMessage!);
+
+            var request = await _requests.GetByIdWithDetailsAsync(requestId);
+            if (request == null)
+                return Result<ServiceRequest>.Failure(ErrorCodes.NotFound, "Request not found.");
+
+            var view = await _authorisation.EnsureCanViewAsync(request);
+            if (view.Failed) return Result<ServiceRequest>.Failure(view.ErrorCode!, view.ErrorMessage!);
+
+            // Requesters never see staff-only notes (FR-011).
+            if (_currentUser.Role == UserRole.Requester)
+            {
+                request.Comments = request.Comments.Where(c => c.VisibleToRequester).ToList();
+            }
+
+            return Result<ServiceRequest>.Success(request);
         }
 
-        public Task<IReadOnlyList<ServiceRequest>> ListMineAsync()
+        public async Task<IReadOnlyList<ServiceRequest>> ListMineAsync()
         {
-            // TODO (FR-003, FR-004): EnsureInRole(Requester) else return empty list; return _requests.ListByRequesterAsync(_currentUser.UserId!.Value).
-            throw new NotImplementedException();
+            if (_authorisation.EnsureInRole(UserRole.Requester).Failed)
+                return new List<ServiceRequest>();
+
+            return await _requests.ListByRequesterAsync(_currentUser.UserId!.Value);
         }
 
-        public Task<PagedResult<ServiceRequest>> SearchAsync(RequestSearchCriteria criteria)
+        public async Task<PagedResult<ServiceRequest>> SearchAsync(RequestSearchCriteria criteria)
         {
-            // TODO (FR-006, FR-007, FR-015): EnsureInRole(Staff, Management); visible = await _authorisation.GetVisibleCategoryIdsAsync();
-            // return _requests.SearchAsync(criteria, visible). If a staff user filters on a category outside their scope, the result is simply empty.
-            throw new NotImplementedException();
+            if (_authorisation.EnsureInRole(UserRole.Staff, UserRole.Management).Failed)
+            {
+                return new PagedResult<ServiceRequest> { Page = Math.Max(1, criteria.Page), PageSize = criteria.PageSize };
+            }
+
+            var visible = await _authorisation.GetVisibleCategoryIdsAsync();
+            return await _requests.SearchAsync(criteria, visible);
         }
     }
 }

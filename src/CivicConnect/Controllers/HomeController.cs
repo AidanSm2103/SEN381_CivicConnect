@@ -1,10 +1,9 @@
 using System.Diagnostics;
-using CivicConnect.Models;
-using Microsoft.AspNetCore.Mvc;
 
 namespace CivicConnect.Controllers
 {
-    public class HomeController : Controller
+    // Public landing pages 
+    public class HomeController : AppControllerBase
     {
         private readonly ILogger<HomeController> _logger;
 
@@ -15,6 +14,8 @@ namespace CivicConnect.Controllers
 
         public IActionResult Index()
         {
+            var home = RedirectToRoleHomeIfSignedIn();
+            if (home != null) return home;
             return View();
         }
 
@@ -30,3 +31,4 @@ namespace CivicConnect.Controllers
         }
     }
 }
+

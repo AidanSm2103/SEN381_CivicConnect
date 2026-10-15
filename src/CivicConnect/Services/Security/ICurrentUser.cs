@@ -1,12 +1,12 @@
 namespace CivicConnect.Services
 {
-    /// <summary>The authenticated user of the current HTTP request. Services use this instead of touching HttpContext.</summary>
+    // The authenticated user of the current HTTP request
     public interface ICurrentUser
     {
         bool IsAuthenticated { get; }
-        /// <summary>Null when not authenticated.</summary>
+        // Null when not authenticated.
         int? UserId { get; }
-        /// <summary>Null when not authenticated.</summary>
+        // Null when not authenticated.
         UserRole? Role { get; }
         string DisplayName { get; }
     }

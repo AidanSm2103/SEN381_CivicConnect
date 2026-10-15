@@ -1,18 +1,18 @@
 namespace CivicConnect.Services
 {
-    /// <summary>
-    /// OWNER: Aidan Smith. Registers the named policies (PolicyNames). Called from SecurityServiceExtensions.
-    /// SAFE NO-OP until implemented so the app starts (requests to [Authorize(Policy=..)] pages will error until done).
-    /// </summary>
+
+    // Registers the named policies called from SecurityServiceExtensions
+    // The fine-grained check called inside every service method (NFR-003 single enforcement point)
+   
     public static class AuthorizationPolicies
     {
         public static void Register(AuthorizationOptions options)
         {
-            // TODO: options.AddPolicy(PolicyNames.RequesterAccess,  p => p.RequireAuthenticatedUser().RequireRole(RoleNames.Requester));
-            //       options.AddPolicy(PolicyNames.StaffAccess,      p => ... RoleNames.Staff);
-            //       options.AddPolicy(PolicyNames.ManagementAccess, p => ... RoleNames.Management);
-            //       options.AddPolicy(PolicyNames.StaffOrManagement,p => ... RequireRole(RoleNames.Staff, RoleNames.Management));
-            // Also set options.FallbackPolicy = null (public pages stay public: Home, Account/Login, Account/Register).
+            options.AddPolicy(PolicyNames.RequesterAccess, p => p.RequireAuthenticatedUser().RequireRole(RoleNames.Requester));
+            options.AddPolicy(PolicyNames.StaffAccess, p => p.RequireAuthenticatedUser().RequireRole(RoleNames.Staff));
+            options.AddPolicy(PolicyNames.ManagementAccess, p => p.RequireAuthenticatedUser().RequireRole(RoleNames.Management));
+            options.AddPolicy(PolicyNames.StaffOrManagement, p => p.RequireAuthenticatedUser().RequireRole(RoleNames.Staff, RoleNames.Management));
+            // No FallbackPolicy: public pages stay public; every other controller carries [Authorize(Policy=...)]
         }
     }
 }

@@ -1,6 +1,6 @@
 namespace CivicConnect.Tests.Fakes
 {
-    /// <summary>In-memory IAuditLogRepository. Tests assert on Histories/Comments. OWNER: Aidan Smith.</summary>
+   // In-memory IAuditLogRepository. Tests assert on Histories/Comments
     public class FakeAuditLogRepository : IAuditLogRepository
     {
         public List<StatusHistory> Histories { get; } = new();
@@ -8,26 +8,29 @@ namespace CivicConnect.Tests.Fakes
 
         public Task AddStatusHistoryAsync(StatusHistory entry)
         {
-            // TODO: Histories.Add(entry); return Task.CompletedTask.
-            throw new NotImplementedException();
+            Histories.Add(entry);
+            return Task.CompletedTask;
         }
 
         public Task AddCommentAsync(RequestComment comment)
         {
-            // TODO: Comments.Add(comment); return Task.CompletedTask.
-            throw new NotImplementedException();
+            Comments.Add(comment);
+            return Task.CompletedTask;
         }
 
         public Task<IReadOnlyList<StatusHistory>> GetHistoryAsync(int requestId)
         {
-            // TODO: filter Histories by ServiceRequestId, order by ChangedAt.
-            throw new NotImplementedException();
+            IReadOnlyList<StatusHistory> list = Histories.Where(h => h.ServiceRequestId == requestId).OrderBy(h => h.ChangedAt).ToList();
+            return Task.FromResult(list);
         }
 
         public Task<IReadOnlyList<RequestComment>> GetCommentsAsync(int requestId, bool requesterVisibleOnly)
         {
-            // TODO: filter Comments (and VisibleToRequester when requested), order by CreatedAt.
-            throw new NotImplementedException();
+            IReadOnlyList<RequestComment> list = Comments
+                .Where(c => c.ServiceRequestId == requestId && (!requesterVisibleOnly || c.VisibleToRequester))
+                .OrderBy(c => c.CreatedAt)
+                .ToList();
+            return Task.FromResult(list);
         }
     }
 }

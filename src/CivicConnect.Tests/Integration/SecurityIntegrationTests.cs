@@ -1,23 +1,61 @@
 namespace CivicConnect.Tests
 {
-    /// <summary>OWNER: Aidan Smith. Remove the Skip argument when you implement a test. Keep the Trait lines - they feed the RTM/evidence table.</summary>
-    public class SecurityIntegrationTests
+    // Real HTTP pipeline, in memory (NFR-002, NFR-003)
+    public class SecurityIntegrationTests : IClassFixture<CivicConnectFactory>
     {
+        private readonly CivicConnectFactory _factory;
 
-        [Fact(Skip = "TODO")]
-        [Trait("Category", "Integration"), Trait("Req", "NFR-002"), Trait("Priority", "High"), Trait("Type", "Negative")]
-        public Task Anonymous_IsRedirectedToLogin_ForProtectedPages()
+        public SecurityIntegrationTests(CivicConnectFactory factory)
         {
-            // TODO: HttpClient with AllowAutoRedirect=false; GET /StaffRequests, /Management/Dashboard, /ServiceRequests/Create -> 302 to /Account/Login.
-            return Task.CompletedTask;
+            _factory = factory;
         }
 
-        [Fact(Skip = "TODO")]
-        [Trait("Category", "Integration"), Trait("Req", "NFR-003"), Trait("Priority", "High"), Trait("Type", "Negative")]
-        public Task Requester_CannotReachStaffOrManagementPages()
+        // "Testing" environment => Program.cs does not run the Development database seeder
+        private WebApplicationFactory<Program> Isolated() =>
+            _factory.WithWebHostBuilder(builder => builder.UseSetting("environment", "Testing"));
+
+        [Theory]
+        [InlineData("/ServiceRequests/Create")]
+        [InlineData("/ServiceRequests/MyRequests")]
+        [InlineData("/StaffRequests/Index")]
+        [InlineData("/Management/Dashboard")]
+        [Trait("Category", "Integration"), Trait("Req", "NFR-002"), Trait("Priority", "High"), Trait("Type", "Negative")]
+        public async Task Anonymous_IsRedirectedToLogin_ForProtectedPages(string path)
         {
-            // TODO: log in as requester; GET /StaffRequests and /Management/Dashboard -> redirect to /Account/AccessDenied (or 403).
-            return Task.CompletedTask;
+            var client = Isolated().CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+            var response = await client.GetAsync(path);
+
+            Assert.Equal(System.Net.HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Contains("/Account/Login", response.Headers.Location?.ToString());
+        }
+
+        [Fact]
+        [Trait("Category", "Integration"), Trait("Req", "NFR-002"), Trait("Priority", "High"), Trait("Type", "Positive")]
+        public async Task LoginAndRegisterPages_ArePublic()
+        {
+            var client = Isolated().CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+
+            Assert.Equal(System.Net.HttpStatusCode.OK, (await client.GetAsync("/Account/Login")).StatusCode);
+            Assert.Equal(System.Net.HttpStatusCode.OK, (await client.GetAsync("/Account/Register")).StatusCode);
+        }
+
+        [Fact]
+        [Trait("Category", "Integration"), Trait("Req", "NFR-003"), Trait("Priority", "High"), Trait("Type", "Negative")]
+        public async Task Requester_CannotReachStaffOrManagementPages()
+        {
+            await _factory.SeedAsync();
+            var client = _factory.NewClient();
+            await CivicConnectFactory.RegisterRequesterAsync(client);
+
+            foreach (var path in new[] { "/StaffRequests/Index", "/Management/Dashboard" })
+            {
+                var response = await client.GetAsync(path);
+
+                Assert.Equal(System.Net.HttpStatusCode.Redirect, response.StatusCode);
+                Assert.Contains("/Account/AccessDenied", response.Headers.Location?.ToString());
+            }
         }
     }
 }
+

@@ -9,8 +9,8 @@ namespace CivicConnect.Services
 
         public override Result Start(ServiceRequest request)
         {
-            // TODO: set Status = RequestStatus.InProgress; return Result.Success().
-            throw new NotImplementedException();
+            request.Status = RequestStatus.InProgress;
+            return Result.Success();
         }
     }
 }

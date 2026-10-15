@@ -15,36 +15,36 @@ namespace CivicConnect.Services
 
         public virtual bool CanMoveTo(RequestStatus target)
         {
-            // TODO: return AllowedTargets.Contains(target).
-            throw new NotImplementedException();
+            return AllowedTargets.Contains(target);
         }
 
         /// <summary>Submitted -> Assigned. Sets AssignedStaffId, AssignedAt, Status.</summary>
         public virtual Result Assign(ServiceRequest request, int staffId, DateTime now)
         {
-            // TODO: default = Failure(ErrorCodes.InvalidTransition, $"A {Status} request cannot be assigned.")
-            throw new NotImplementedException();
+            return Invalid("assigned");
         }
 
         /// <summary>Assigned -> InProgress. Sets Status.</summary>
         public virtual Result Start(ServiceRequest request)
         {
-            // TODO: default = Failure(ErrorCodes.InvalidTransition, ...)
-            throw new NotImplementedException();
+            return Invalid("started");
         }
 
         /// <summary>InProgress -> Resolved. Sets Status and ResolvedAt.</summary>
         public virtual Result Resolve(ServiceRequest request, DateTime now)
         {
-            // TODO: default = Failure(ErrorCodes.InvalidTransition, ...)
-            throw new NotImplementedException();
+            return Invalid("resolved");
         }
 
         /// <summary>Resolved -> Closed. Sets Status and ClosedAt.</summary>
         public virtual Result Close(ServiceRequest request, DateTime now)
         {
-            // TODO: default = Failure(ErrorCodes.InvalidTransition, ...)
-            throw new NotImplementedException();
+            return Invalid("closed");
+        }
+
+        private Result Invalid(string action)
+        {
+            return Result.Failure(ErrorCodes.InvalidTransition, $"A {Status} request cannot be {action}.");
         }
     }
 }

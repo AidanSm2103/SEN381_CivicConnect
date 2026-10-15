@@ -1,6 +1,7 @@
 @model LoginViewModel
-@* OWNER: Aidan Smith *@
-@{ ViewData["Title"] = "Log in"; }
+@{
+    ViewData["Title"] = "Log in";
+}
 <h2>Log in</h2>
 <form asp-action="Login" method="post">
     <input type="hidden" asp-for="ReturnUrl" />
@@ -9,4 +10,6 @@
     <div><label asp-for="Password"></label><input asp-for="Password" /><span asp-validation-for="Password"></span></div>
     <button type="submit">Log in</button>
 </form>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
