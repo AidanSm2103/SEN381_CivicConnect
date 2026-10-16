@@ -1,8 +1,12 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "CivicConnect";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">CivicConnect</h1>
+    <p class="lead">Submit a service request, follow it from submission to resolution, and see who is handling it.</p>
+    <p>
+        <a class="btn btn-primary" asp-controller="Account" asp-action="Login">Log in</a>
+        <a class="btn btn-outline-secondary" asp-controller="Account" asp-action="Register">Register</a>
+    </p>
 </div>
