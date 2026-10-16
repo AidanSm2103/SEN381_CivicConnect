@@ -1,0 +1,73 @@
+@model RequestDetailsViewModel
+@* OWNER: Enrique de Sousa. Full details + action buttons (FR-008..FR-012). Buttons only show when Model.Actions allows. *@
+@{ ViewData["Title"] = "Request " + Model.ReferenceNo; }
+<h2>Request @Model.ReferenceNo</h2>
+<p>Requester: @Model.RequesterName</p>
+<p>Category: @Model.CategoryName</p>
+<p>Description: @Model.Description</p>
+<p>Status: @Model.Status</p>
+<p>Submitted: @Model.SubmittedAt</p>
+<p>Assigned to: @(Model.AssignedStaffName ?? "Not yet assigned")</p>
+
+@if (Model.Actions.CanAccept)
+{
+    <form asp-action="Accept" method="post">
+        <input type="hidden" name="RequestId" value="@Model.Id" />
+        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+        <button type="submit">Accept</button>
+    </form>
+}
+@if (Model.Actions.CanAssign)
+{
+    <form asp-action="Assign" method="post">
+        <input type="hidden" name="RequestId" value="@Model.Id" />
+        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+        <select name="AssigneeStaffId" asp-items="Model.AssignableStaff"><option value="">-- Choose staff --</option></select>
+        <button type="submit">Assign</button>
+    </form>
+}
+@if (Model.Actions.CanStart)
+{
+    <form asp-action="StartWork" method="post">
+        <input type="hidden" name="RequestId" value="@Model.Id" />
+        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+        <button type="submit">Start work</button>
+    </form>
+}
+@if (Model.Actions.CanResolve)
+{
+    <form asp-action="Resolve" method="post">
+        <input type="hidden" name="RequestId" value="@Model.Id" />
+        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+        <textarea name="ResolutionNote" placeholder="How was it resolved?"></textarea>
+        <button type="submit">Resolve</button>
+    </form>
+}
+@if (Model.Actions.CanClose)
+{
+    <form asp-action="Close" method="post">
+        <input type="hidden" name="RequestId" value="@Model.Id" />
+        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+        <input name="Note" placeholder="Optional closing note" />
+        <button type="submit">Close</button>
+    </form>
+}
+@if (Model.Actions.CanAddNote)
+{
+    <form asp-action="AddNote" method="post">
+        <input type="hidden" name="RequestId" value="@Model.Id" />
+        <textarea name="Body" placeholder="Internal note"></textarea>
+        <button type="submit">Add note</button>
+    </form>
+}
+
+<h3>Status history</h3>
+@foreach (var item in Model.History)
+{
+    <p>@item.ChangedAt - @item.ChangedByName: @item.FromStatus -> @item.ToStatus @item.Note</p>
+}
+<h3>Comments and notes</h3>
+@foreach (var c in Model.Comments)
+{
+    <p>[@c.Kind] @c.CreatedAt - @c.AuthorName: @c.Body</p>
+}

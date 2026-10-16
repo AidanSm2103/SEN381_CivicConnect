@@ -1,0 +1,47 @@
+# Blocking quality gate for every PR into main 
+# In GitHub: Settings > Branches > main protection > "Require status checks" > select "build-test" and "dependency-audit".
+name: CI
+
+on:
+  pull_request:
+    branches: [ main, 'release/**' ]
+  push:
+    branches: [ main, 'release/**' ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore
+        run: dotnet restore src/CivicConnect/CivicConnect.sln
+      - name: Build (warnings are shown, errors block)
+        run: dotnet build src/CivicConnect/CivicConnect.sln --no-restore --configuration Release
+      - name: Format check (style gate)
+        run: dotnet format src/CivicConnect/CivicConnect.sln --verify-no-changes --no-restore
+      - name: Test (unit, black-box, integration, E2E - not Performance)
+        run: dotnet test src/CivicConnect/CivicConnect.sln --no-build --configuration Release --filter "Category!=Performance" --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: '**/TestResults/**'
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore
+        run: dotnet restore src/CivicConnect/CivicConnect.sln
+      - name: Fail on known vulnerable packages
+        run: |
+          dotnet list src/CivicConnect/CivicConnect.sln package --vulnerable --include-transitive 2>&1 | tee audit.txt
+          if grep -q "has the following vulnerable packages" audit.txt; then echo "Vulnerable packages found"; exit 1; fi
+

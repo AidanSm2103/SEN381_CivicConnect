@@ -27,7 +27,7 @@ Community organisations often manage facility faults, IT support requests, maint
 
 ## Technology Stack
 
-- **Backend:** ASP.NET Core (C#), .NET 8 LTS
+- **Backend:** ASP.NET Core (C#)
 - **Frontend:** Razor Pages / MVC
 - **Persistence:** Entity Framework Core + SQL Server
 - **Auth:** ASP.NET Core Identity with policy-based, role-based access control
@@ -35,7 +35,6 @@ Community organisations often manage facility faults, IT support requests, maint
 
 ## Prerequisites
 
-- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - SQL Server Express / LocalDB, or SQLite (for local development)
 - Visual Studio 2022 (Community Edition is free) or VS Code with the C# extension
 
@@ -64,10 +63,6 @@ dotnet run
 /
 ├── Documentation/         # PED, requirements, architecture, decisions, risk, change, quality, security, deployment
 ├── src/                   # Application source code
-├── tests/                 # Automated tests
-├── .github/
-│   ├── workflows/         # CI configuration
-│   └── pull_request_template.md
 ├── .gitignore
 ├── LICENSE
 └── README.md

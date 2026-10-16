@@ -1,0 +1,22 @@
+@model RequestSearchViewModel
+@* OWNER: Michael-John Robinson. Management filter list (FR-015). Links go to the shared read-only details page. *@
+@{ ViewData["Title"] = "All requests"; }
+<h2>All requests</h2>
+<form method="get">
+    <select name="CategoryId" asp-items="Model.Categories"><option value="">All categories</option></select>
+    <select name="Status" asp-items="Html.GetEnumSelectList<RequestStatus>()"><option value="">Any status</option></select>
+    <label><input type="checkbox" name="IncludeClosed" value="true" /> Include closed</label>
+    <button type="submit">Filter</button>
+</form>
+<table class="table">
+    <thead><tr><th>Reference</th><th>Category</th><th>Status</th><th>Assigned to</th><th>Submitted</th><th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Results.Items)
+    {
+        <tr>
+            <td>@r.ReferenceNo</td><td>@r.CategoryName</td><td>@r.Status</td><td>@r.AssignedStaffName</td><td>@r.SubmittedAt</td>
+            <td><a asp-controller="StaffRequests" asp-action="Details" asp-route-id="@r.Id">View</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

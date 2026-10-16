@@ -1,0 +1,12 @@
+# Normalise line endings so Windows (CRLF) and the Linux CI runner agree
+* text=auto
+*.cs text eol=lf
+*.cshtml text eol=lf
+*.csproj text eol=lf
+*.yml text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.png binary
+*.ico binary
+*.pdf binary
+*.docx binary

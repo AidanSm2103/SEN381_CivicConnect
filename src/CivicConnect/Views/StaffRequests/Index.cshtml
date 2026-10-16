@@ -1,0 +1,52 @@
+@model RequestSearchViewModel
+@* OWNER: Enrique de Sousa. Staff work queue (FR-006, FR-007). *@
+@{ ViewData["Title"] = "Work queue"; }
+<h2>Work queue</h2>
+<form method="get">
+    <input name="Text" value="@Model.Criteria.Text" placeholder="Search reference or description" />
+    <select name="CategoryId" asp-items="Model.Categories"><option value="">All categories</option></select>
+    <select name="Status" asp-items="Html.GetEnumSelectList<RequestStatus>()"><option value="">Any status</option></select>
+    <label><input type="checkbox" name="IncludeClosed" value="true" /> Include closed</label>
+    <button type="submit">Filter</button>
+</form>
+<table class="table">
+    <thead><tr>
+        <th><a asp-action="Index" asp-route-SortBy="ReferenceNo" asp-route-Descending="@(Model.Criteria.SortBy == "ReferenceNo" && !Model.Criteria.Descending)" asp-route-Text="@Model.Criteria.Text" asp-route-CategoryId="@Model.Criteria.CategoryId" asp-route-Status="@Model.Criteria.Status" asp-route-IncludeClosed="@Model.Criteria.IncludeClosed">Reference</a></th>
+        <th><a asp-action="Index" asp-route-SortBy="Category" asp-route-Descending="@(Model.Criteria.SortBy == "Category" && !Model.Criteria.Descending)" asp-route-Text="@Model.Criteria.Text" asp-route-CategoryId="@Model.Criteria.CategoryId" asp-route-Status="@Model.Criteria.Status" asp-route-IncludeClosed="@Model.Criteria.IncludeClosed">Category</a></th>
+        <th><a asp-action="Index" asp-route-SortBy="Status" asp-route-Descending="@(Model.Criteria.SortBy == "Status" && !Model.Criteria.Descending)" asp-route-Text="@Model.Criteria.Text" asp-route-CategoryId="@Model.Criteria.CategoryId" asp-route-Status="@Model.Criteria.Status" asp-route-IncludeClosed="@Model.Criteria.IncludeClosed">Status</a></th>
+        <th>Assigned to</th>
+        <th><a asp-action="Index" asp-route-SortBy="SubmittedAt" asp-route-Descending="@(Model.Criteria.SortBy == "SubmittedAt" && !Model.Criteria.Descending)" asp-route-Text="@Model.Criteria.Text" asp-route-CategoryId="@Model.Criteria.CategoryId" asp-route-Status="@Model.Criteria.Status" asp-route-IncludeClosed="@Model.Criteria.IncludeClosed">Submitted</a></th>
+        <th></th></tr></thead>
+    <tbody>
+    @foreach (var r in Model.Results.Items)
+    {
+        <tr>
+            <td>@r.ReferenceNo</td>
+            <td>@r.CategoryName</td>
+            <td>@r.Status</td>
+            <td>@r.AssignedStaffName</td>
+            <td>@r.SubmittedAt</td>
+            <td><a asp-action="Details" asp-route-id="@r.Id">Open</a></td>
+        </tr>
+    }
+    </tbody>
+</table>
+@{
+    var c = Model.Criteria;
+    var current = Model.Results.Page;
+    var total = Model.Results.TotalPages;
+}
+@if (total > 1)
+{
+    <nav aria-label="Paging">
+        @if (current > 1)
+        {
+            <a asp-action="@ViewContext.RouteData.Values["action"]" asp-route-Page="@(current - 1)" asp-route-Text="@c.Text" asp-route-CategoryId="@c.CategoryId" asp-route-Status="@c.Status" asp-route-IncludeClosed="@c.IncludeClosed" asp-route-SortBy="@c.SortBy" asp-route-Descending="@c.Descending">Previous</a>
+        }
+        <span>Page @current of @total</span>
+        @if (current < total)
+        {
+            <a asp-action="@ViewContext.RouteData.Values["action"]" asp-route-Page="@(current + 1)" asp-route-Text="@c.Text" asp-route-CategoryId="@c.CategoryId" asp-route-Status="@c.Status" asp-route-IncludeClosed="@c.IncludeClosed" asp-route-SortBy="@c.SortBy" asp-route-Descending="@c.Descending">Next</a>
+        }
+    </nav>
+}

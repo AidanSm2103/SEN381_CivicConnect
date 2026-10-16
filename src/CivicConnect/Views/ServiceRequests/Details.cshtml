@@ -1,0 +1,23 @@
+@model RequestDetailsViewModel
+@* OWNER: Enrique de Sousa. Requester view of one request (FR-003, FR-005). *@
+@{ ViewData["Title"] = "Request " + Model.ReferenceNo; }
+<h2>Request @Model.ReferenceNo</h2>
+<p>Category: @Model.CategoryName</p>
+<p>Description: @Model.Description</p>
+<p>Status: @Model.Status</p>
+<p>Submitted: @Model.SubmittedAt</p>
+<p>Assigned to: @(Model.AssignedStaffName ?? "Not yet assigned")</p>
+
+<h3>Updates</h3>
+@* Feedback only - the service already strips staff-only notes. *@
+@foreach (var comment in Model.Comments)
+{
+    <p>@comment.CreatedAt: @comment.Body</p>
+}
+
+<h3>Status history</h3>
+@foreach (var item in Model.History)
+{
+    <p>@item.ChangedAt: @item.FromStatus -> @item.ToStatus</p>
+}
+<a asp-action="MyRequests">Back to my requests</a>
