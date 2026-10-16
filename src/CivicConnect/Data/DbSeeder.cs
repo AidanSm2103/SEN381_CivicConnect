@@ -1,10 +1,8 @@
 namespace CivicConnect.Data
 {
-    /// <summary>
-    /// Development-only demo data. Called from Program.cs when Environment is Development.
-    /// OWNER: Michael-John Robinson. Never runs in Staging/Production. Passwords come from the "SeedPassword"
-    /// configuration key (user-secrets) - nothing is hard-coded or committed (secrets rule, R-007).
-    /// </summary>
+    // Demo data. Called from Program.cs in Development, or in Staging when SeedDemoData=true.
+    // Runs in Development, and in Staging only when SeedDemoData=true; never in Production. 
+
     public static class DbSeeder
     {
         public static async Task SeedAsync(IServiceProvider services)
