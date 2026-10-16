@@ -1,6 +1,6 @@
 namespace CivicConnect.Composition
 {
-    /// <summary>OWNER: Aidan Smith. Cookie authentication + policies + security services. Already complete.</summary>
+    // Cookie authentication + policies + security services
     public static class SecurityServiceExtensions
     {
         public static IServiceCollection AddCivicConnectSecurity(this IServiceCollection services)
@@ -15,7 +15,24 @@ namespace CivicConnect.Composition
                     options.Cookie.HttpOnly = true;
                     options.SlidingExpiration = true;
                     options.ExpireTimeSpan = TimeSpan.FromHours(8);
-                    // TODO(Aidan): options.Cookie.SecurePolicy = CookieSecurePolicy.Always; (HTTPS only) once HTTPS profile confirmed.
+                    options.Cookie.SameSite = SameSiteMode.Lax;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // Secure whenever the request is HTTPS
+
+                    // NFR-002: log every rejected request (who, where) and then keep the framework's normal redirect.
+                    var defaults = new CookieAuthenticationEvents();
+                    options.Events = new CookieAuthenticationEvents
+                    {
+                        OnRedirectToLogin = context =>
+                        {
+                            LogRejected(context.HttpContext, "Unauthenticated request rejected");
+                            return defaults.RedirectToLogin(context);
+                        },
+                        OnRedirectToAccessDenied = context =>
+                        {
+                            LogRejected(context.HttpContext, "Forbidden request rejected");
+                            return defaults.RedirectToAccessDenied(context);
+                        }
+                    };
                 });
 
             services.AddAuthorization(AuthorizationPolicies.Register);
@@ -26,5 +43,15 @@ namespace CivicConnect.Composition
             services.AddScoped<IAuthService, AuthService>();
             return services;
         }
+
+        // Writes who was refused and for which path. Line breaks are stripped so a crafted URL cannot forge log lines.
+        private static void LogRejected(HttpContext http, string message)
+        {
+            var logger = http.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("CivicConnect.Security");
+            var userId = http.User.FindFirst(AppClaimTypes.UserId)?.Value ?? "anonymous";
+            var path = (http.Request.Path.Value ?? string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty);
+            logger.LogWarning("{Message}: user {UserId}, path {Path}", message, userId, path);
+        }
     }
 }
+
