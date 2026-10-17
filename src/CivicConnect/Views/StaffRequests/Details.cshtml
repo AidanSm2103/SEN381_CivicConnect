@@ -1,73 +1,134 @@
 @model RequestDetailsViewModel
-@* OWNER: Enrique de Sousa. Full details + action buttons (FR-008..FR-012). Buttons only show when Model.Actions allows. *@
-@{ ViewData["Title"] = "Request " + Model.ReferenceNo; }
-<h2>Request @Model.ReferenceNo</h2>
-<p>Requester: @Model.RequesterName</p>
-<p>Category: @Model.CategoryName</p>
-<p>Description: @Model.Description</p>
-<p>Status: @Model.Status</p>
-<p>Submitted: @Model.SubmittedAt</p>
-<p>Assigned to: @(Model.AssignedStaffName ?? "Not yet assigned")</p>
+@{
+    ViewData["Title"] = "Request " + Model.ReferenceNo;
+    var a = Model.Actions;
+    var hasActions = a.CanAccept || a.CanAssign || a.CanStart || a.CanResolve || a.CanClose || a.CanAddNote;
+}
+<div class="cc-page-head">
+    <div>
+        <h2>Request @Model.ReferenceNo</h2>
+        <p class="cc-sub">@Model.CategoryName &middot; raised by @Model.RequesterName</p>
+    </div>
+    <partial name="_StatusBadge" model="Model.Status" />
+</div>
 
-@if (Model.Actions.CanAccept)
-{
-    <form asp-action="Accept" method="post">
-        <input type="hidden" name="RequestId" value="@Model.Id" />
-        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
-        <button type="submit">Accept</button>
-    </form>
-}
-@if (Model.Actions.CanAssign)
-{
-    <form asp-action="Assign" method="post">
-        <input type="hidden" name="RequestId" value="@Model.Id" />
-        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
-        <select name="AssigneeStaffId" asp-items="Model.AssignableStaff"><option value="">-- Choose staff --</option></select>
-        <button type="submit">Assign</button>
-    </form>
-}
-@if (Model.Actions.CanStart)
-{
-    <form asp-action="StartWork" method="post">
-        <input type="hidden" name="RequestId" value="@Model.Id" />
-        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
-        <button type="submit">Start work</button>
-    </form>
-}
-@if (Model.Actions.CanResolve)
-{
-    <form asp-action="Resolve" method="post">
-        <input type="hidden" name="RequestId" value="@Model.Id" />
-        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
-        <textarea name="ResolutionNote" placeholder="How was it resolved?"></textarea>
-        <button type="submit">Resolve</button>
-    </form>
-}
-@if (Model.Actions.CanClose)
-{
-    <form asp-action="Close" method="post">
-        <input type="hidden" name="RequestId" value="@Model.Id" />
-        <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
-        <input name="Note" placeholder="Optional closing note" />
-        <button type="submit">Close</button>
-    </form>
-}
-@if (Model.Actions.CanAddNote)
-{
-    <form asp-action="AddNote" method="post">
-        <input type="hidden" name="RequestId" value="@Model.Id" />
-        <textarea name="Body" placeholder="Internal note"></textarea>
-        <button type="submit">Add note</button>
-    </form>
-}
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="cc-card mb-3">
+            <dl class="cc-meta">
+                <div><dt>Requester</dt><dd>@Model.RequesterName</dd></div>
+                <div><dt>Submitted</dt><dd>@Model.SubmittedAt.ToString("dd MMM yyyy, HH:mm")</dd></div>
+                <div><dt>Assigned to</dt><dd>@(Model.AssignedStaffName ?? "Not yet assigned")</dd></div>
+            </dl>
+            <h3 class="cc-card-title">Description</h3>
+            <p class="cc-desc">@Model.Description</p>
+        </div>
 
-<h3>Status history</h3>
-@foreach (var item in Model.History)
-{
-    <p>@item.ChangedAt - @item.ChangedByName: @item.FromStatus -> @item.ToStatus @item.Note</p>
-}
-<h3>Comments and notes</h3>
-@foreach (var c in Model.Comments)
-{
-    <p>[@c.Kind] @c.CreatedAt - @c.AuthorName: @c.Body</p>
-}
+        @if (hasActions)
+        {
+            <div class="cc-card cc-actions mb-3">
+                <h3 class="cc-card-title">Actions</h3>
+                @if (a.CanAccept)
+                {
+                    <div class="cc-action">
+                        <form asp-action="Accept" method="post">
+                            <input type="hidden" name="RequestId" value="@Model.Id" />
+                            <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+                            <button type="submit" class="btn btn-primary">Accept</button>
+                        </form>
+                    </div>
+                }
+                @if (a.CanAssign)
+                {
+                    <div class="cc-action">
+                        <form asp-action="Assign" method="post">
+                            <input type="hidden" name="RequestId" value="@Model.Id" />
+                            <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+                            <select name="AssigneeStaffId" asp-items="Model.AssignableStaff" class="form-select"><option value="">-- Choose staff --</option></select>
+                            <button type="submit" class="btn btn-navy">Assign</button>
+                        </form>
+                    </div>
+                }
+                @if (a.CanStart)
+                {
+                    <div class="cc-action">
+                        <form asp-action="StartWork" method="post">
+                            <input type="hidden" name="RequestId" value="@Model.Id" />
+                            <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+                            <button type="submit" class="btn btn-primary">Start work</button>
+                        </form>
+                    </div>
+                }
+                @if (a.CanResolve)
+                {
+                    <div class="cc-action">
+                        <form asp-action="Resolve" method="post">
+                            <input type="hidden" name="RequestId" value="@Model.Id" />
+                            <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+                            <textarea name="ResolutionNote" class="form-control" placeholder="How was it resolved?"></textarea>
+                            <button type="submit" class="btn btn-primary">Resolve</button>
+                        </form>
+                    </div>
+                }
+                @if (a.CanClose)
+                {
+                    <div class="cc-action">
+                        <form asp-action="Close" method="post">
+                            <input type="hidden" name="RequestId" value="@Model.Id" />
+                            <input type="hidden" name="RowVersion" value="@Convert.ToBase64String(Model.RowVersion)" />
+                            <input name="Note" class="form-control" placeholder="Optional closing note" />
+                            <button type="submit" class="btn btn-navy">Close</button>
+                        </form>
+                    </div>
+                }
+                @if (a.CanAddNote)
+                {
+                    <div class="cc-action">
+                        <form asp-action="AddNote" method="post">
+                            <input type="hidden" name="RequestId" value="@Model.Id" />
+                            <textarea name="Body" class="form-control" placeholder="Internal note"></textarea>
+                            <button type="submit" class="btn btn-outline-primary">Add note</button>
+                        </form>
+                    </div>
+                }
+            </div>
+        }
+
+        <div class="cc-card">
+            <h3 class="cc-card-title">Comments and notes</h3>
+            @if (!Model.Comments.Any())
+            {
+                <p class="cc-sub mb-0">Nothing recorded yet.</p>
+            }
+            @foreach (var c in Model.Comments)
+            {
+                <div class="cc-comment">
+                    <div class="head">
+                        <span><span class="cc-kind">@c.Kind</span> &nbsp;@c.AuthorName</span>
+                        <span>@c.CreatedAt.ToString("dd MMM yyyy, HH:mm")</span>
+                    </div>
+                    <div>@c.Body</div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="cc-card">
+            <h3 class="cc-card-title">Status history</h3>
+            <ul class="cc-timeline">
+                @foreach (var item in Model.History)
+                {
+                    <li>
+                        <div class="when">@item.ChangedAt.ToString("dd MMM yyyy, HH:mm") &middot; @item.ChangedByName</div>
+                        <div class="what">@(item.FromStatus.HasValue? item.FromStatus.ToString() + " ? " : "")@item.ToStatus</div>
+                        @if (!string.IsNullOrWhiteSpace(item.Note))
+                        {
+                            <div class="note">@item.Note</div>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+<p class="mt-3"><a href="javascript:history.back()">&larr; Back</a></p>

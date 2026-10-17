@@ -1,21 +1,48 @@
 @model ManagementDashboardViewModel
-@* OWNER: Michael-John Robinson. Read-only overview (FR-013, FR-014, FR-016). *@
-@{ ViewData["Title"] = "Overview"; }
-<h2>Service overview</h2>
-<h3>Requests by status</h3>
-<ul>
-@foreach (var row in Model.StatusCounts)
-{
-    <li>@row.Status: @row.Count</li>
+@{
+    ViewData["Title"] = "Overview";
+    var total = Model.StatusCounts.Sum(s => s.Count);
 }
-</ul>
-<h3>Staff activity</h3>
-<table class="table">
-    <thead><tr><th>Staff</th><th>Open</th><th>Resolved</th><th>Closed</th></tr></thead>
-    <tbody>
-    @foreach (var s in Model.StaffActivity)
+<div class="cc-page-head">
+    <div>
+        <h2>Service overview</h2>
+        <p class="cc-sub">@total @(total == 1 ? "request" : "requests") in total</p>
+    </div>
+    <a class="btn btn-navy" asp-action="Requests">View all requests</a>
+</div>
+
+<div class="row g-3 mb-4">
+    @foreach (var row in Model.StatusCounts)
     {
-        <tr><td>@s.StaffName</td><td>@s.AssignedOpen</td><td>@s.Resolved</td><td>@s.Closed</td></tr>
+        var pct = total == 0 ? 0 : (int)Math.Round(100.0 * row.Count / total);
+        <div class="col-6 col-lg">
+            <div class="cc-card cc-stat">
+                <div class="num">@row.Count</div>
+                <div class="lbl"><partial name="_StatusBadge" model="row.Status" /></div>
+                <div class="cc-bar s-@row.Status"><span style="width:@(pct)%"></span></div>
+            </div>
+        </div>
     }
-    </tbody>
-</table>
+</div>
+
+<div class="cc-card cc-table-wrap">
+    <div class="p-3 pb-0"><h3 class="cc-card-title">Staff activity</h3></div>
+    @if (!Model.StaffActivity.Any())
+    {
+        <div class="cc-empty">No staff activity yet.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table cc-table">
+                <thead><tr><th>Staff</th><th>Open</th><th>Resolved</th><th>Closed</th></tr></thead>
+                <tbody>
+                    @foreach (var s in Model.StaffActivity)
+                    {
+                        <tr><td><strong>@s.StaffName</strong></td><td>@s.AssignedOpen</td><td>@s.Resolved</td><td>@s.Closed</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

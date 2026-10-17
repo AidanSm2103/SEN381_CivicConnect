@@ -1,0 +1,9 @@
+﻿@model RequestStatus
+@{
+    var label = Model switch
+    {
+        RequestStatus.InProgress => "In progress",
+        _ => Model.ToString()
+    };
+}
+<span class="cc-status cc-status-@Model">@label</span>

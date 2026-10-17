@@ -1,23 +1,56 @@
 @model RequestDetailsViewModel
-@* OWNER: Enrique de Sousa. Requester view of one request (FR-003, FR-005). *@
-@{ ViewData["Title"] = "Request " + Model.ReferenceNo; }
-<h2>Request @Model.ReferenceNo</h2>
-<p>Category: @Model.CategoryName</p>
-<p>Description: @Model.Description</p>
-<p>Status: @Model.Status</p>
-<p>Submitted: @Model.SubmittedAt</p>
-<p>Assigned to: @(Model.AssignedStaffName ?? "Not yet assigned")</p>
-
-<h3>Updates</h3>
-@* Feedback only - the service already strips staff-only notes. *@
-@foreach (var comment in Model.Comments)
-{
-    <p>@comment.CreatedAt: @comment.Body</p>
+@{
+    ViewData["Title"] = "Request " + Model.ReferenceNo;
 }
+<div class="cc-page-head">
+    <div>
+        <h2>Request @Model.ReferenceNo</h2>
+        <p class="cc-sub">@Model.CategoryName</p>
+    </div>
+    <partial name="_StatusBadge" model="Model.Status" />
+</div>
 
-<h3>Status history</h3>
-@foreach (var item in Model.History)
-{
-    <p>@item.ChangedAt: @item.FromStatus -> @item.ToStatus</p>
-}
-<a asp-action="MyRequests">Back to my requests</a>
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="cc-card mb-3">
+            <dl class="cc-meta">
+                <div><dt>Status</dt><dd><partial name="_StatusBadge" model="Model.Status" /></dd></div>
+                <div><dt>Submitted</dt><dd>@Model.SubmittedAt.ToString("dd MMM yyyy, HH:mm")</dd></div>
+                <div><dt>Assigned to</dt><dd>@(Model.AssignedStaffName ?? "Not yet assigned")</dd></div>
+            </dl>
+            <h3 class="cc-card-title">Description</h3>
+            <p class="cc-desc">@Model.Description</p>
+        </div>
+
+        <div class="cc-card">
+            <h3 class="cc-card-title">Updates</h3>
+            @* Feedback only - the service already strips staff-only notes. *@
+            @if (!Model.Comments.Any())
+            {
+                <p class="cc-sub mb-0">No updates yet. You will see feedback here when the status changes.</p>
+            }
+            @foreach (var comment in Model.Comments)
+            {
+                <div class="cc-comment">
+                    <div class="head"><span>@comment.CreatedAt.ToString("dd MMM yyyy, HH:mm")</span></div>
+                    <div>@comment.Body</div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="cc-card">
+            <h3 class="cc-card-title">Status history</h3>
+            <ul class="cc-timeline">
+                @foreach (var item in Model.History)
+                {
+                    <li>
+                        <div class="when">@item.ChangedAt.ToString("dd MMM yyyy, HH:mm")</div>
+                        <div class="what">@(item.FromStatus.HasValue? item.FromStatus.ToString() + " ? " : "")@item.ToStatus</div>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+<p class="mt-3"><a asp-action="MyRequests">&larr; Back to my requests</a></p>
