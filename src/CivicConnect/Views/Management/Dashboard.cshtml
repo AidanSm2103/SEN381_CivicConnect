@@ -1,4 +1,5 @@
 @model ManagementDashboardViewModel
+@* OWNER: Michael-John Robinson. Read-only overview (FR-013, FR-014, FR-016). *@
 @{
     ViewData["Title"] = "Overview";
     var total = Model.StatusCounts.Sum(s => s.Count);
@@ -11,18 +12,20 @@
     <a class="btn btn-navy" asp-action="Requests">View all requests</a>
 </div>
 
+<h3 class="cc-card-title">Requests by status</h3>
 <div class="row g-3 mb-4">
-    @foreach (var row in Model.StatusCounts)
-    {
-        var pct = total == 0 ? 0 : (int)Math.Round(100.0 * row.Count / total);
-        <div class="col-6 col-lg">
-            <div class="cc-card cc-stat">
-                <div class="num">@row.Count</div>
-                <div class="lbl"><partial name="_StatusBadge" model="row.Status" /></div>
-                <div class="cc-bar s-@row.Status"><span style="width:@(pct)%"></span></div>
-            </div>
+@foreach (var row in Model.StatusCounts)
+{
+    var pct = total == 0 ? 0 : (int)Math.Round(100.0 * row.Count / total);
+    <div class="col-6 col-lg">
+        <div class="cc-card cc-stat">
+            <div class="num">@row.Count</div>
+            <div class="lbl"><partial name="_StatusBadge" model="row.Status" /></div>
+            <div class="small text-muted mt-2">@row.Status: @row.Count of @total</div>
+            <div class="cc-bar s-@row.Status"><span style="width:@(pct)%"></span></div>
         </div>
-    }
+    </div>
+}
 </div>
 
 <div class="cc-card cc-table-wrap">
@@ -33,16 +36,16 @@
     }
     else
     {
-        <div class="table-responsive">
-            <table class="table cc-table">
-                <thead><tr><th>Staff</th><th>Open</th><th>Resolved</th><th>Closed</th></tr></thead>
-                <tbody>
-                    @foreach (var s in Model.StaffActivity)
-                    {
-                        <tr><td><strong>@s.StaffName</strong></td><td>@s.AssignedOpen</td><td>@s.Resolved</td><td>@s.Closed</td></tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+    <div class="table-responsive">
+    <table class="table cc-table">
+        <thead><tr><th>Staff</th><th>Open</th><th>Resolved</th><th>Closed</th></tr></thead>
+        <tbody>
+        @foreach (var s in Model.StaffActivity)
+        {
+            <tr><td><strong>@s.StaffName</strong></td><td>@s.AssignedOpen</td><td>@s.Resolved</td><td>@s.Closed</td></tr>
+        }
+        </tbody>
+    </table>
+    </div>
     }
 </div>
