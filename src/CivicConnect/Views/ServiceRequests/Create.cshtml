@@ -1,22 +1,34 @@
 @model CreateRequestViewModel
-@* OWNER: Enrique de Sousa. Replaces the bootstrap form; same fields, now bound to a view model. *@
-@{ ViewData["Title"] = "Submit a request"; }
-<h2>Submit a Service Request</h2>
+@{
+    ViewData["Title"] = "Submit a request";
+}
+<div class="cc-page-head">
+    <div>
+        <h2>Submit a Service Request</h2>
+        <p class="cc-sub">Tell us what needs attention. You will get a reference number to track it.</p>
+    </div>
+</div>
 
-<form asp-action="Create" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <div>
-        <label asp-for="CategoryId"></label>
-        <select asp-for="CategoryId" asp-items="Model.Categories">
-            <option value="">-- Select a category --</option>
-        </select>
-        <span asp-validation-for="CategoryId"></span>
-    </div>
-    <div>
-        <label asp-for="Description"></label>
-        <textarea asp-for="Description"></textarea>
-        <span asp-validation-for="Description"></span>
-    </div>
-    <button type="submit">Submit Request</button>
-</form>
-@section Scripts { <partial name="_ValidationScriptsPartial" /> }
+<div class="cc-card" style="max-width: 720px;">
+    <form asp-action="Create" method="post">
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+        <div class="mb-3">
+            <label asp-for="CategoryId" class="form-label"></label>
+            <select asp-for="CategoryId" asp-items="Model.Categories" class="form-select">
+                <option value="">-- Select a category --</option>
+            </select>
+            <span asp-validation-for="CategoryId" class="text-danger"></span>
+        </div>
+        <div class="mb-4">
+            <label asp-for="Description" class="form-label"></label>
+            <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+        <a class="btn btn-link" asp-action="MyRequests">Cancel</a>
+    </form>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
