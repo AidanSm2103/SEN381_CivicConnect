@@ -125,12 +125,38 @@ namespace CivicConnect.Data
 
         public async Task<string> NextReferenceNoAsync()
         {
-            // "CC-{year}-{sequence:D6}". Highest existing sequence for this year + 1. Two simultaneous submits could
-            // compute the same number; the unique index on ReferenceNo is the safety net, so the loser's save fails
-            // rather than creating a duplicate (FR-001).
-            var year = DateTime.UtcNow.Year;
-            var prefix = $"CC-{year}-";
+            // "CC-{year}-{sequence:D6}".
+            // SQL Server: the number comes from the database SEQUENCE dbo.ServiceRequestRefSeq (migration AddReferenceNoSequence).
+            // A sequence hands out every value exactly once, even when many requests are submitted at the same moment
+            // (DEF-008: the old "highest + 1" approach let concurrent submits pick the same number). Repays TD-001.
+            // The unique index on ReferenceNo stays as a second safety net.
+            var prefix = $"CC-{DateTime.UtcNow.Year}-";
 
+            if (_db.Database.IsRelational())
+            {
+                await _db.Database.OpenConnectionAsync();
+                try
+                {
+                    await using var command = _db.Database.GetDbConnection().CreateCommand();
+                    command.CommandText = "SELECT NEXT VALUE FOR dbo.ServiceRequestRefSeq";
+                    // Join the unit of work's transaction when there is one (EfUnitOfWork starts it before SubmitAsync runs).
+                    var transaction = _db.Database.CurrentTransaction;
+                    if (transaction != null)
+                    {
+                        command.Transaction = Microsoft.EntityFrameworkCore.Storage.DbContextTransactionExtensions.GetDbTransaction(transaction);
+                    }
+
+                    var next = Convert.ToInt64(await command.ExecuteScalarAsync());
+                    return $"{prefix}{next:D6}";
+                }
+                finally
+                {
+                    await _db.Database.CloseConnectionAsync();
+                }
+            }
+
+            // In-memory provider (automated tests only): it has no sequences, so keep "highest existing + 1".
+            // Tests submit one request at a time, so the race in DEF-008 cannot occur there.
             var latest = await _db.ServiceRequests
                 .AsNoTracking()
                 .Where(r => r.ReferenceNo.StartsWith(prefix))
@@ -138,13 +164,13 @@ namespace CivicConnect.Data
                 .Select(r => r.ReferenceNo)
                 .FirstOrDefaultAsync();
 
-            var next = 1;
-            if (latest != null && int.TryParse(latest.Substring(prefix.Length), out var current))
+            var current = 0;
+            if (latest != null)
             {
-                next = current + 1;
+                int.TryParse(latest.Substring(prefix.Length), out current);
             }
 
-            return $"{prefix}{next:D6}";
+            return $"{prefix}{current + 1:D6}";
         }
 
         public void SetExpectedRowVersion(ServiceRequest request, byte[] rowVersion)
