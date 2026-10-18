@@ -1,28 +1,33 @@
-@* Role-based navigation links, rendered inside the layout's navbar *@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? string.Empty;
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? string.Empty;
+    string Active(string c, string? a = null) => controller == c && (a == null || action == a) ? "active" : string.Empty;
+}
 @if (User.Identity?.IsAuthenticated == true)
 {
     @if (User.IsInRole(RoleNames.Requester))
     {
-        <li class="nav-item"><a class="nav-link text-dark" asp-controller="ServiceRequests" asp-action="Create">New request</a></li>
-        <li class="nav-item"><a class="nav-link text-dark" asp-controller="ServiceRequests" asp-action="MyRequests">My requests</a></li>
+        <li class="nav-item"><a class="nav-link @Active("ServiceRequests", "Create")" asp-controller="ServiceRequests" asp-action="Create">New request</a></li>
+        <li class="nav-item"><a class="nav-link @(Active("ServiceRequests", "MyRequests") + Active("ServiceRequests", "Details"))" asp-controller="ServiceRequests" asp-action="MyRequests">My requests</a></li>
     }
     @if (User.IsInRole(RoleNames.Staff))
     {
-        <li class="nav-item"><a class="nav-link text-dark" asp-controller="StaffRequests" asp-action="Index">Work queue</a></li>
+        <li class="nav-item"><a class="nav-link @Active("StaffRequests")" asp-controller="StaffRequests" asp-action="Index">Work queue</a></li>
     }
     @if (User.IsInRole(RoleNames.Management))
     {
-        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Management" asp-action="Dashboard">Overview</a></li>
-        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Management" asp-action="Requests">All requests</a></li>
+        <li class="nav-item"><a class="nav-link @Active("Management", "Dashboard")" asp-controller="Management" asp-action="Dashboard">Overview</a></li>
+        <li class="nav-item"><a class="nav-link @Active("Management", "Requests")" asp-controller="Management" asp-action="Requests">All requests</a></li>
     }
     <li class="nav-item">
         <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-            <button type="submit" class="nav-link btn btn-link text-dark">Log out</button>
+            <button type="submit" class="nav-link btn btn-link">Log out</button>
         </form>
     </li>
 }
 else
 {
-    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Log in</a></li>
-    <li class="nav-item"><a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Register</a></li>
+    <li class="nav-item"><a class="nav-link @Active("Account", "Login")" asp-controller="Account" asp-action="Login">Log in</a></li>
+    <li class="nav-item"><a class="nav-link @Active("Account", "Register")" asp-controller="Account" asp-action="Register">Register</a></li>
 }
+

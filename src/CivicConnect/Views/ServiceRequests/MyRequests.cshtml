@@ -1,19 +1,42 @@
 @model MyRequestsViewModel
-@* OWNER: Enrique de Sousa (FR-003, FR-004) *@
-@{ ViewData["Title"] = "My requests"; }
-<h2>My requests</h2>
-<table class="table">
-    <thead><tr><th>Reference</th><th>Category</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
-    <tbody>
-    @foreach (var r in Model.Requests)
+@{
+    ViewData["Title"] = "My requests";
+}
+<div class="cc-page-head">
+    <div>
+        <h2>My requests</h2>
+        <p class="cc-sub">Everything you have submitted and where it stands.</p>
+    </div>
+    <a class="btn btn-primary" asp-action="Create">+ New request</a>
+</div>
+
+<div class="cc-card cc-table-wrap">
+    @if (!Model.Requests.Any())
     {
-        <tr>
-            <td>@r.ReferenceNo</td>
-            <td>@r.CategoryName</td>
-            <td>@r.Status</td>
-            <td>@r.SubmittedAt</td>
-            <td><a asp-action="Details" asp-route-id="@r.Id">View</a></td>
-        </tr>
+        <div class="cc-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h6l1 2h3v14H5V6h3l1-2Z" /><path d="M9 12h6M9 16h4" /></svg>
+            <p class="mb-3">You have not submitted any requests yet.</p>
+            <a class="btn btn-primary" asp-action="Create">Submit your first request</a>
+        </div>
     }
-    </tbody>
-</table>
+    else
+    {
+        <div class="table-responsive">
+            <table class="table cc-table">
+                <thead><tr><th>Reference</th><th>Category</th><th>Status</th><th>Submitted</th><th></th></tr></thead>
+                <tbody>
+                    @foreach (var r in Model.Requests)
+                    {
+                        <tr>
+                            <td><a class="cc-ref" asp-action="Details" asp-route-id="@r.Id">@r.ReferenceNo</a></td>
+                            <td>@r.CategoryName</td>
+                            <td><partial name="_StatusBadge" model="r.Status" /></td>
+                            <td>@r.SubmittedAt.ToString("dd MMM yyyy, HH:mm")</td>
+                            <td class="text-end"><a asp-action="Details" asp-route-id="@r.Id">View</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
