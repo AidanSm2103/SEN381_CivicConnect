@@ -13,6 +13,7 @@ namespace CivicConnect.Data
             var hasher = sp.GetRequiredService<IPasswordHasher>();
             var configuration = sp.GetRequiredService<IConfiguration>();
             var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger("DbSeeder");
+            var requests = sp.GetRequiredService<IRequestRepository>();
 
             await db.Database.MigrateAsync();
 
@@ -60,7 +61,7 @@ namespace CivicConnect.Data
                 var submitted = now.AddDays(-10 + seq);
                 var request = new ServiceRequest
                 {
-                    ReferenceNo = $"CC-{year}-{seq:D6}",
+                    ReferenceNo = await requests.NextReferenceNoAsync(),
                     CategoryId = s.Cat,
                     Description = s.Desc,
                     Status = s.Status,
@@ -91,6 +92,7 @@ namespace CivicConnect.Data
                 }
 
                 db.ServiceRequests.Add(request);
+                await db.SaveChangesAsync();
                 seq++;
             }
 
