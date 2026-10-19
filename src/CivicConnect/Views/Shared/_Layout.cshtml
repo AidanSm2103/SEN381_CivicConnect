@@ -10,29 +10,41 @@
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">CivicConnect</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+        <nav class="navbar navbar-expand-md cc-nav">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <svg class="cc-logo" viewBox="0 0 32 32" aria-hidden="true">
+                        <rect width="32" height="32" rx="8" fill="#0e8a7d" />
+                        <path d="M16 6 6 12v2h20v-2L16 6Zm-8 10v7h3v-7H8Zm6.5 0v7h3v-7h-3ZM21 16v7h3v-7h-3ZM6 25v2h20v-2H6Z" fill="#fff" />
+                    </svg>
+                    CivicConnect
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#ccNav" aria-controls="ccNav"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+                <div id="ccNav" class="navbar-collapse collapse">
+                    <ul class="navbar-nav me-auto mb-2 mb-md-0">
                         <partial name="_NavLinks" />
                     </ul>
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        var displayName = User.FindFirst(AppClaimTypes.DisplayName)?.Value ?? User.Identity?.Name;
+                        var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+                        <div class="cc-user">
+                            <span>@displayName</span>
+                            @if (!string.IsNullOrEmpty(role))
+                            {
+                                <span class="cc-role">@role</span>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+    <div class="container cc-page">
+        <main role="main">
             @if (TempData["Error"] is string errorMessage)
             {
                 <div class="alert alert-danger">@errorMessage</div>
@@ -45,9 +57,10 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - CivicConnect - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="cc-footer">
+        <div class="container d-flex flex-wrap justify-content-between gap-2">
+            <span>&copy; 2026 CivicConnect &middot; SEN381</span>
+            <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>

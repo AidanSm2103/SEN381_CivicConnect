@@ -1,0 +1,20 @@
+@model RequestSearchViewModel
+@{
+    var c = Model.Criteria;
+    var current = Model.Results.Page;
+    var total = Model.Results.TotalPages;
+}
+@if (total > 1)
+{
+    <nav aria-label="Paging" class="cc-pager">
+        @if (current > 1)
+        {
+            <a asp-action="@ViewContext.RouteData.Values["action"]" asp-route-Page="@(current - 1)" asp-route-Text="@c.Text" asp-route-CategoryId="@c.CategoryId" asp-route-Status="@c.Status" asp-route-IncludeClosed="@c.IncludeClosed" asp-route-SortBy="@c.SortBy" asp-route-Descending="@c.Descending">&larr; Previous</a>
+        }
+        <span>Page @current of @total</span>
+        @if (current < total)
+        {
+            <a asp-action="@ViewContext.RouteData.Values["action"]" asp-route-Page="@(current + 1)" asp-route-Text="@c.Text" asp-route-CategoryId="@c.CategoryId" asp-route-Status="@c.Status" asp-route-IncludeClosed="@c.IncludeClosed" asp-route-SortBy="@c.SortBy" asp-route-Descending="@c.Descending">Next &rarr;</a>
+        }
+    </nav>
+}

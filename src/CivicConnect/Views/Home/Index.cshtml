@@ -2,11 +2,42 @@
     ViewData["Title"] = "CivicConnect";
 }
 
-<div class="text-center">
-    <h1 class="display-4">CivicConnect</h1>
-    <p class="lead">Submit a service request, follow it from submission to resolution, and see who is handling it.</p>
-    <p>
-        <a class="btn btn-primary" asp-controller="Account" asp-action="Login">Log in</a>
-        <a class="btn btn-outline-secondary" asp-controller="Account" asp-action="Register">Register</a>
-    </p>
-</div>
+<section class="cc-hero">
+    <h1>Report it. Track it. Get it fixed.</h1>
+    <p>CivicConnect lets residents submit service requests, follow them from submission to resolution, and see who is handling them.</p>
+    <div class="d-flex flex-wrap gap-2 mt-4">
+        <a class="btn btn-light btn-lg" asp-controller="Account" asp-action="Login">Log in</a>
+        <a class="btn btn-outline-light btn-lg" asp-controller="Account" asp-action="Register">Create an account</a>
+    </div>
+</section>
+
+<section class="row g-3 mt-2">
+    <div class="col-md-4">
+        <div class="cc-card cc-feature">
+            <div class="cc-ico">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+            </div>
+            <h3>Submit in seconds</h3>
+            <p>Pick a category, describe the issue and receive a reference number straight away.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="cc-card cc-feature">
+            <div class="cc-ico">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+            </div>
+            <h3>Follow every step</h3>
+            <p>See each status change and the feedback left by the team, from Submitted to Closed.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="cc-card cc-feature">
+            <div class="cc-ico">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18" /><path d="M7 15l4-4 3 3 5-6" /></svg>
+            </div>
+            <h3>Clear oversight</h3>
+            <p>Staff work a focused queue while management sees workload and progress at a glance.</p>
+        </div>
+    </div>
+</section>
+
